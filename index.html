@@ -1,0 +1,2971 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python Çalışma Stüdyosu Pro | 8 Modül • 40 Aşamalı Görev</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter & JetBrains Mono Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Pyodide (Gerçek Tarayıcı İçi Python 3.11 Motoru) -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        obsidian: {
+                            950: '#070a12',
+                            900: '#0b0f19',
+                            850: '#111827',
+                            800: '#1e293b',
+                            700: '#334155',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Özel Kaydırma Çubuğu */
+        ::-webkit-scrollbar {
+            width: 7px;
+            height: 7px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.25);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(148, 163, 184, 0.45);
+        }
+
+        /* Kod Editörü Satır Numaraları ve Senkronizasyon */
+        .editor-wrapper {
+            position: relative;
+            display: flex;
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1.65;
+        }
+        .line-numbers {
+            user-select: none;
+            text-align: right;
+            padding: 16px 12px;
+            min-width: 50px;
+            border-right: 1px solid rgba(148, 163, 184, 0.12);
+            overflow: hidden;
+            color: #475569;
+            background-color: #080b13;
+        }
+        .code-textarea {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            outline: none;
+            resize: none;
+            background: transparent;
+            white-space: pre;
+            overflow-x: auto;
+            tab-size: 4;
+            -moz-tab-size: 4;
+            color: #e2e8f0;
+            caret-color: #818cf8;
+        }
+        .code-textarea::selection {
+            background: rgba(99, 102, 241, 0.35);
+        }
+
+        @keyframes softPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.35); }
+            50% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+        }
+        .guidance-glow {
+            animation: softPulse 2.2s infinite;
+        }
+
+        /* ÖZEL: Sol Üst Sarı Komut Sözlüğü Kutucuğu Neon Yanıp Sönme Efekti */
+        @keyframes yellowBeaconFlash {
+            0%, 100% {
+                background-color: #facc15;
+                color: #090d16;
+                border-color: #fef08a;
+                box-shadow: 0 0 18px 4px rgba(250, 204, 21, 0.85), 0 0 36px 8px rgba(245, 158, 11, 0.45);
+                transform: scale(1.03);
+            }
+            50% {
+                background-color: #78350f;
+                color: #fef08a;
+                border-color: #facc15;
+                box-shadow: 0 0 4px 0 rgba(250, 204, 21, 0.2);
+                transform: scale(0.99);
+            }
+        }
+        .yellow-box-flashing {
+            animation: yellowBeaconFlash 0.95s ease-in-out infinite !important;
+        }
+    </style>
+</head>
+<body class="bg-obsidian-950 text-slate-100 min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white overflow-x-hidden">
+
+    <!-- ÜST NAVİGASYON ÇUBUĞU -->
+    <header class="sticky top-0 z-30 bg-obsidian-900/95 backdrop-blur-md border-b border-slate-800/90 px-3 sm:px-5 py-2.5">
+        <div class="max-w-[1800px] mx-auto flex flex-wrap items-center justify-between gap-2.5">
+
+            <!-- SOL ÜST: Menü + Logo + DİKKAT ÇEKİCİ SARI KOMUT SÖZLÜĞÜ KUTUCUĞU -->
+            <div class="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                <button id="mobileMenuBtn" onclick="toggleMobileSidebar()" class="lg:hidden p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition cursor-pointer" title="Müfredat Menüsü">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
+                </button>
+
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 via-violet-600 to-emerald-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 shrink-0">
+                        <i data-lucide="terminal" class="w-5 h-5"></i>
+                    </div>
+                    <div class="hidden sm:block">
+                        <div class="flex items-center gap-1.5">
+                            <h1 class="font-extrabold text-sm sm:text-base tracking-tight text-white">Python Stüdyo <span class="text-indigo-400">Pro</span></h1>
+                            <span class="hidden xl:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">40 Görev</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 text-[11px] text-slate-400">
+                            <span id="saveStatusBadge" class="inline-flex items-center gap-1 text-emerald-400 font-medium">
+                                <i data-lucide="cloud-check" class="w-3 h-3"></i>
+                                <span id="saveStatusText">Otomatik Kayıt</span>
+                            </span>
+                            <span class="text-slate-600">•</span>
+                            <span id="pyodideStatusText" class="text-amber-400 font-medium">Python 3.11 Yükleniyor...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SOL ÜSTTEKİ ÖZEL SARI KUTUCUK (Modül geçince sarı yanıp söner!) -->
+                <div class="flex items-center gap-1.5">
+                    <button id="yellowDictBox" onclick="handleYellowBoxClick()" class="relative flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-extrabold bg-amber-400 text-slate-950 hover:bg-amber-300 border-2 border-amber-300 shadow-lg shadow-amber-500/20 transition-all duration-300 cursor-pointer">
+                        <i data-lucide="sparkles" class="w-4 h-4 shrink-0"></i>
+                        <span>Sarı Komut Sözlüğü</span>
+                        <span id="yellowBoxAlertBadge" class="hidden items-center px-1.5 py-0.5 rounded-md text-[10px] font-black uppercase bg-slate-950 text-amber-300 tracking-wide">
+                            Yeni Aşama!
+                        </span>
+                    </button>
+                    <button onclick="triggerYellowBoxFlash('Önizleme: Yeni Modül Komutları Açıldı!')" class="hidden md:inline-flex p-1.5 rounded-lg bg-amber-400/10 hover:bg-amber-400/20 text-amber-400 border border-amber-400/25 transition cursor-pointer" title="Sarı kutucuk uyarısını test et">
+                        <i data-lucide="bell-ring" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ORTA: Ana Çalışma Modu Sekmeleri -->
+            <nav class="flex items-center gap-1 bg-obsidian-950 p-1 rounded-xl border border-slate-800 order-3 lg:order-2 w-full lg:w-auto overflow-x-auto">
+                <button onclick="switchMainTab('curriculum')" id="mainTab-curriculum" class="main-nav-btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow transition whitespace-nowrap cursor-pointer">
+                    <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                    <span>Görevler (40 Soru)</span>
+                </button>
+                <button onclick="switchMainTab('capstone')" id="mainTab-capstone" class="main-nav-btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800/80 transition whitespace-nowrap cursor-pointer">
+                    <i data-lucide="rocket" class="w-3.5 h-3.5 text-emerald-400"></i>
+                    <span>Kapsamlı Projeler (40-50 Satır)</span>
+                </button>
+                <button onclick="switchMainTab('notes')" id="mainTab-notes" class="main-nav-btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800/80 transition whitespace-nowrap cursor-pointer">
+                    <i data-lucide="book-open-text" class="w-3.5 h-3.5 text-sky-400"></i>
+                    <span>Detaylı Konu Notları</span>
+                </button>
+            </nav>
+
+            <!-- SAĞ: İlerleme & Kayıt / Yedekleme -->
+            <div class="flex items-center gap-2 order-2 lg:order-3">
+                <div class="hidden sm:flex items-center gap-2 bg-obsidian-950 px-3 py-1.5 rounded-xl border border-slate-800">
+                    <i data-lucide="trophy" class="w-4 h-4 text-amber-400"></i>
+                    <div class="w-20 xl:w-28 bg-slate-800 h-2 rounded-full overflow-hidden">
+                        <div id="globalProgressBar" class="bg-gradient-to-r from-indigo-500 to-emerald-400 h-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                    <span id="globalProgressText" class="text-xs font-bold tabular-nums text-slate-200">0/40</span>
+                </div>
+
+                <button onclick="manualSaveAndToast()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/30 transition cursor-pointer" title="Tüm kodlarını ve ilerlemeni kaydet">
+                    <i data-lucide="save" class="w-3.5 h-3.5"></i>
+                    <span class="hidden md:inline">Kaydet</span>
+                </button>
+                <button onclick="openBackupModal()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition cursor-pointer" title="Kodları .py veya Yedek (.json) Olarak İndir / Yükle">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ========================================================================
+         MOD 1: MÜFREDAT & SORULAR (3 SÜTUNLU ÇALIŞMA STÜDYOSU)
+         ======================================================================== -->
+    <div id="view-curriculum" class="flex-1 flex overflow-hidden max-w-[1800px] w-full mx-auto relative">
+
+        <!-- SOL SIDEBAR: 8 MODÜL & 40 SORU HARİTASI -->
+        <aside id="curriculumSidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-72 xl:w-80 bg-obsidian-900 border-r border-slate-800 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 flex flex-col pt-16 lg:pt-0 lg:h-[calc(100vh-62px)]">
+            <div class="p-3.5 border-b border-slate-800 flex items-center justify-between bg-obsidian-950/60">
+                <div>
+                    <h2 class="text-xs font-extrabold uppercase tracking-wider text-indigo-400">MEB Python Müfredatı</h2>
+                    <p class="text-[11px] text-slate-400 mt-0.5">8 Modül • Her Modülde 5 Soru (40 Görev)</p>
+                </div>
+                <button onclick="confirmResetAll()" class="text-[11px] text-rose-400 hover:text-rose-300 hover:underline font-medium cursor-pointer">Sıfırla</button>
+            </div>
+            <div id="moduleTreeContainer" class="flex-1 overflow-y-auto p-2.5 space-y-2.5">
+                <!-- Modüller ve 5'er soruluk listeler JS ile oluşturulacak -->
+            </div>
+        </aside>
+
+        <!-- Mobil Sidebar Arka Plan -->
+        <div id="sidebarBackdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-black/60 z-30 hidden lg:hidden"></div>
+
+        <!-- ORTA & SAĞ ÇALIŞMA ALANI -->
+        <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-y-auto lg:overflow-hidden lg:h-[calc(100vh-62px)]">
+
+            <!-- ORTA SÜTUN: GÖREV, KONU NOTU VE REHBERLİK (6 Sütun) -->
+            <section class="lg:col-span-6 flex flex-col lg:h-full overflow-y-auto border-b lg:border-b-0 lg:border-r border-slate-800 bg-obsidian-950 p-4 sm:p-5 space-y-4">
+
+                <!-- Adım Navigasyon Başlığı & Modül İçi 5 Adım Çubuğu -->
+                <div class="space-y-2.5">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <span id="stepModuleBadge" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-500/15 text-indigo-300 border border-indigo-500/30">Modül 1</span>
+                            <span id="stepCounterBadge" class="text-xs font-semibold text-slate-400">Genel: 1 / 40</span>
+                            <span id="stepDoneBadge" class="hidden items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                                <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Tamamlandı
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <button id="prevQBtn" onclick="goStep(-1)" class="p-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 disabled:opacity-35 transition cursor-pointer" title="Önceki Soru">
+                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            </button>
+                            <button id="nextQBtn" onclick="goStep(1)" class="p-2 rounded-xl bg-slate-800/90 hover:bg-slate-700 disabled:opacity-35 transition cursor-pointer" title="Sonraki Soru">
+                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Modül İçi 5 Aşama Göstergesi -->
+                    <div id="moduleStageDots" class="grid grid-cols-5 gap-1.5"></div>
+                </div>
+
+                <!-- Soru Başlığı -->
+                <h2 id="stepTitle" class="text-lg sm:text-xl font-extrabold text-white tracking-tight"></h2>
+
+                <!-- Alt Sekmeler: Görev & Soru | Detaylı Konu Notu & Örnekler -->
+                <div class="flex items-center gap-1.5 bg-obsidian-900 p-1 rounded-xl border border-slate-800">
+                    <button onclick="switchCenterSubTab('task')" id="subTab-task" class="center-sub-btn flex-1 py-2 px-3 rounded-lg text-xs font-bold bg-indigo-600 text-white transition cursor-pointer flex items-center justify-center gap-1.5">
+                        <i data-lucide="target" class="w-3.5 h-3.5"></i>
+                        <span>Görev & Kodlama Sorusu</span>
+                    </button>
+                    <button onclick="switchCenterSubTab('note')" id="subTab-note" class="center-sub-btn flex-1 py-2 px-3 rounded-lg text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer flex items-center justify-center gap-1.5">
+                        <i data-lucide="file-text" class="w-3.5 h-3.5 text-sky-400"></i>
+                        <span>Konu Anlatımı & Örnek Kodlar</span>
+                    </button>
+                </div>
+
+                <!-- ALT SEKME 1: GÖREV & KODLAMA SORUSU -->
+                <div id="centerPane-task" class="space-y-4">
+                    <div class="rounded-2xl bg-obsidian-900 border border-slate-800 p-4 sm:p-5 space-y-3.5 shadow-lg">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+                                <i data-lucide="pen-tool" class="w-3.5 h-3.5"></i>
+                                <span>Senin Görevin (Sıfırdan Kodla)</span>
+                            </span>
+                            <span id="stepStageBadge" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-amber-300 border border-slate-700">Aşama 1/5 • Temel Kavram</span>
+                        </div>
+
+                        <div id="stepPrompt" class="text-sm sm:text-[15px] leading-relaxed text-slate-200 space-y-2"></div>
+
+                        <!-- Beklenen Çıktı / Test Kriteri -->
+                        <div id="stepExpectedBox" class="rounded-xl bg-obsidian-950 border border-slate-800 p-3.5 space-y-1.5">
+                            <div class="flex items-center justify-between text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                                <span>Beklenen Örnek Çıktı</span>
+                                <span id="stepMockInputInfo" class="text-amber-400 normal-case font-medium hidden"></span>
+                            </div>
+                            <pre id="stepExpectedOutput" class="font-mono text-xs sm:text-sm text-emerald-400 whitespace-pre-wrap"></pre>
+                        </div>
+
+                        <!-- Aksiyon Butonları -->
+                        <div class="flex flex-wrap items-center gap-2.5 pt-2">
+                            <button onclick="checkUserSolution()" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-emerald-600/20 transition cursor-pointer">
+                                <i data-lucide="check-circle" class="w-4 h-4"></i>
+                                <span>Kodu Kontrol Et</span>
+                            </button>
+
+                            <button onclick="openGuidancePanel(true)" class="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 font-bold text-xs sm:text-sm transition cursor-pointer">
+                                <i data-lucide="life-buoy" class="w-4 h-4"></i>
+                                <span>Yapamadım / Örnek Test Göster</span>
+                            </button>
+                        </div>
+
+                        <!-- Kontrol Geri Bildirimi -->
+                        <div id="taskFeedbackBox" class="hidden rounded-xl p-3.5 text-xs sm:text-sm font-medium border"></div>
+                    </div>
+
+                    <!-- Hızlı Konu Özeti Hatırlatıcı -->
+                    <div class="rounded-2xl bg-slate-900/60 border border-slate-800/80 p-4 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-sky-400 flex items-center gap-1.5">
+                                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                                <span>Öğrenme İpucu & Hatırlatma</span>
+                            </span>
+                            <button onclick="switchCenterSubTab('note')" class="text-xs font-semibold text-indigo-400 hover:underline cursor-pointer">
+                                Detaylı Örnekleri Gör →
+                            </button>
+                        </div>
+                        <div id="stepQuickSummary" class="text-xs sm:text-sm text-slate-300 leading-relaxed"></div>
+                    </div>
+
+                    <!-- OTOMATİK REHBERLİK PANELİ (Takıldığında veya Hata Yapıldığında Açılır) -->
+                    <div id="guidancePanel" class="hidden rounded-2xl bg-obsidian-900 border-2 border-amber-500/50 p-4 sm:p-5 space-y-4 shadow-xl">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                                    <i data-lucide="compass" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-sm text-white">Çözümlü Benzer Soru & Nasıl Mantık Yürütmeli?</h3>
+                                    <p class="text-[11px] text-slate-400">Önce benzer örneği incele, adımları takip et ve kendi kodunu yaz.</p>
+                                </div>
+                            </div>
+                            <button onclick="closeGuidancePanel()" class="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 cursor-pointer">
+                                <i data-lucide="x" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+
+                        <div class="flex gap-1.5 bg-obsidian-950 p-1 rounded-xl border border-slate-800">
+                            <button onclick="switchGuideTab('similar')" id="gTab-similar" class="g-tab-btn flex-1 py-1.5 px-2 rounded-lg text-xs font-bold bg-amber-400 text-slate-950 transition cursor-pointer">1. Benzer Örnek</button>
+                            <button onclick="switchGuideTab('logic')" id="gTab-logic" class="g-tab-btn flex-1 py-1.5 px-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer">2. Mantık Adımları</button>
+                            <button onclick="switchGuideTab('solution')" id="gTab-solution" class="g-tab-btn flex-1 py-1.5 px-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer">3. İpucu & Çözüm</button>
+                        </div>
+
+                        <div id="gBody-similar" class="text-xs sm:text-sm space-y-2.5"></div>
+                        <div id="gBody-logic" class="hidden text-xs sm:text-sm space-y-2"></div>
+                        <div id="gBody-solution" class="hidden text-xs sm:text-sm space-y-3"></div>
+                    </div>
+                </div>
+
+                <!-- ALT SEKME 2: DETAYLI KONU ANLATIMI & ÖRNEK KODLAR -->
+                <div id="centerPane-note" class="hidden space-y-4">
+                    <div class="rounded-2xl bg-obsidian-900 border border-slate-800 p-4 sm:p-5 space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <div>
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-sky-400">Modül Ders Notu</span>
+                                <h3 id="noteModuleTitle" class="text-base sm:text-lg font-extrabold text-white mt-0.5"></h3>
+                            </div>
+                            <button onclick="switchCenterSubTab('task')" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition cursor-pointer">
+                                Soruya Dön →
+                            </button>
+                        </div>
+                        <div id="noteDetailedBody" class="space-y-4 text-sm text-slate-300 leading-relaxed"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SAĞ SÜTUN: TERTEMİZ KOD EDİTÖRÜ + MOBİL SEMBOL ÇUBUĞU + TERMİNAL (6 Sütun) -->
+            <section class="lg:col-span-6 flex flex-col lg:h-full bg-[#090d16]">
+
+                <!-- Editör Üst Bar -->
+                <div class="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 bg-obsidian-900 border-b border-slate-800">
+                    <div class="flex items-center gap-2.5">
+                        <div class="flex gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                        </div>
+                        <span class="text-xs font-mono text-slate-300 flex items-center gap-1.5 bg-obsidian-950 px-2.5 py-1 rounded-lg border border-slate-800">
+                            <i data-lucide="file-code-2" class="w-3.5 h-3.5 text-indigo-400"></i>
+                            <span id="lessonFileName">m1_soru1.py</span>
+                        </span>
+                        <span id="lessonLineCountBadge" class="text-[11px] font-mono text-slate-500 hidden sm:inline">1 satır</span>
+                    </div>
+
+                    <div class="flex items-center gap-1.5">
+                        <button onclick="changeEditorFontSize(-1)" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 cursor-pointer" title="Yazı Boyutunu Küçült">A-</button>
+                        <button onclick="changeEditorFontSize(1)" class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 cursor-pointer" title="Yazı Boyutunu Büyüt">A+</button>
+                        <button onclick="clearLessonEditor()" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer" title="Editörü Temizle">
+                            <i data-lucide="eraser" class="w-3.5 h-3.5"></i>
+                            <span>Temizle</span>
+                        </button>
+                        <button onclick="runCodeInTerminal('lesson')" class="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/25 transition cursor-pointer">
+                            <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+                            <span>Çalıştır (F5)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Editör Gövdesi (Tamamen Kullanıcının Yazması İçin Temiz Açılır) -->
+                <div class="flex-1 min-h-[220px] editor-wrapper bg-[#0b101b] overflow-hidden">
+                    <div id="lessonLineNumbers" class="line-numbers text-sm">1</div>
+                    <textarea id="lessonEditor" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"
+                        class="code-textarea text-sm"
+                        placeholder="# Kodunu buraya sıfırdan yaz..."></textarea>
+                </div>
+
+                <!-- MOBİL HIZLI KOD SEMBOL ÇUBUĞU (Telefonla Girenler İçin) -->
+                <div class="flex items-center gap-1.5 px-3 py-1.5 bg-obsidian-900/95 border-t border-slate-800/90 overflow-x-auto">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 shrink-0 mr-1">Hızlı Tuşlar:</span>
+                    <button type="button" onclick="insertCodeSnippet('lesson', '    ')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono font-bold text-indigo-300 shrink-0 cursor-pointer">Tab</button>
+                    <button type="button" onclick="insertCodeSnippet('lesson', ':')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono font-bold text-slate-200 shrink-0 cursor-pointer">:</button>
+                    <button type="button" onclick="insertCodeSnippet('lesson', '()', 1)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono font-bold text-slate-200 shrink-0 cursor-pointer">( )</button>
+                    <button type="button" onclick="insertCodeSnippet('lesson', '&quot;&quot;', 1)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono font-bold text-emerald-300 shrink-0 cursor-pointer">" "</button>
+                    <button type="button" onclick="insertCodeSnippet('lesson', '[]', 1)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono font-bold text-slate-200 shrink-0 cursor-pointer">[ ]</button>
+                    <button type="button" onclick="insertCodeSnippet('lesson', '{}', 1)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono font-bold text-slate-200 shrink-0 cursor-pointer">{ }</button>
+                    <button type="button" onclick="insertCodeSnippet('lesson', ' = ')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono font-bold text-amber-300 shrink-0 cursor-pointer">=</button>
+                    <button type="button" onclick="insertCodeSnippet('lesson', ' == ')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono font-bold text-amber-300 shrink-0 cursor-pointer">==</button>
+                    <button type="button" onclick="insertCodeSnippet('lesson', '# ')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono font-bold text-slate-400 shrink-0 cursor-pointer">#</button>
+                </div>
+
+                <!-- Modern İnteraktif Terminal Konsolu -->
+                <div class="h-60 sm:h-64 flex flex-col border-t border-slate-800 bg-[#070a11]">
+                    <div class="flex items-center justify-between px-4 py-2 bg-obsidian-900/95 border-b border-slate-800">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="terminal" class="w-4 h-4 text-emerald-400"></i>
+                            <span class="text-xs font-bold uppercase tracking-wider text-slate-300">İnteraktif Python Terminali</span>
+                            <span id="lessonExecTime" class="text-[11px] font-mono text-slate-500"></span>
+                        </div>
+                        <button onclick="resetTerminal('lesson')" class="text-xs text-slate-400 hover:text-white flex items-center gap-1 transition cursor-pointer">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            <span>Konsolu Temizle</span>
+                        </button>
+                    </div>
+
+                    <div id="lessonTerminalOut" class="flex-1 p-4 font-mono text-xs sm:text-sm overflow-y-auto space-y-1.5 leading-relaxed">
+                        <div class="text-slate-500">Python 3.11 Etkileşimli Konsol Hazır. Kodunu yaz ve <span class="text-indigo-400 font-semibold">Çalıştır</span> butonuna bas.</div>
+                    </div>
+
+                    <div id="lessonTerminalInputBar" class="hidden items-center gap-2 px-3 py-2 bg-indigo-950/60 border-t border-indigo-500/40">
+                        <span class="text-indigo-400 font-mono text-xs font-bold shrink-0">GİRİŞ &gt;</span>
+                        <span id="lessonInputPromptText" class="text-xs font-mono text-amber-300 truncate max-w-[45%]"></span>
+                        <input id="lessonTerminalInputField" type="text" class="flex-1 bg-obsidian-950 border border-indigo-500/50 rounded-lg px-2.5 py-1 text-xs sm:text-sm font-mono text-white outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Değeri yazıp Enter'a bas...">
+                        <button onclick="submitTerminalInput('lesson')" class="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold cursor-pointer">Gönder</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- ========================================================================
+         MOD 2: KAPSAMLI PROJE GÖREVLERİ (40-50 SATIRLIK UYGULAMA ATÖLYESİ)
+         ======================================================================== -->
+    <div id="view-capstone" class="hidden flex-1 flex-col lg:h-[calc(100vh-62px)] max-w-[1800px] w-full mx-auto overflow-y-auto lg:overflow-hidden">
+        <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 lg:h-full">
+
+            <!-- Sol: Proje Seçimi, Gereksinim Listesi & Mimari Plan (5 Sütun) -->
+            <section class="lg:col-span-5 flex flex-col lg:h-full overflow-y-auto border-b lg:border-b-0 lg:border-r border-slate-800 bg-obsidian-950 p-4 sm:p-6 space-y-5">
+                <div class="space-y-1">
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                        <i data-lucide="rocket" class="w-3.5 h-3.5"></i>
+                        <span>40–50 Satırlık Kapsamlı Kodlama Atölyesi</span>
+                    </div>
+                    <h2 class="text-xl font-extrabold text-white">Öğrendiklerini Birleştir, Gerçek Proje Geliştir</h2>
+                    <p class="text-xs sm:text-sm text-slate-400">Değişkenler, döngüler, koşullar, listeler, sözlükler, kümeler ve fonksiyonları tek bir uygulamada birleştir.</p>
+                </div>
+
+                <div id="capstoneSelectorGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+
+                <div class="rounded-2xl bg-obsidian-900 border border-slate-800 p-4 sm:p-5 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 id="capTitle" class="text-base sm:text-lg font-extrabold text-white"></h3>
+                        <span class="px-2.5 py-1 rounded-lg bg-indigo-500/15 text-indigo-300 text-xs font-mono font-bold">Hedef: ~40-50 Satır</span>
+                    </div>
+                    <p id="capDesc" class="text-xs sm:text-sm text-slate-300 leading-relaxed"></p>
+
+                    <div class="space-y-2">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-emerald-400">Projede Olması Gereken Özellikler:</h4>
+                        <ul id="capRequirementsList" class="space-y-2 text-xs sm:text-sm text-slate-200"></ul>
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-800 space-y-2.5">
+                        <button onclick="toggleCapstonePlan()" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-bold transition cursor-pointer">
+                            <span class="flex items-center gap-2"><i data-lucide="map" class="w-4 h-4"></i> Adım Adım Algoritma Planı & Örnek Akış</span>
+                            <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                        </button>
+                        <div id="capPlanBox" class="hidden rounded-xl bg-obsidian-950 border border-slate-800 p-3.5 space-y-3 text-xs text-slate-300"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sağ: 40-50 Satırlık Geniş Kod Editörü & Terminal (7 Sütun) -->
+            <section class="lg:col-span-7 flex flex-col lg:h-full bg-[#090d16]">
+                <div class="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 bg-obsidian-900 border-b border-slate-800">
+                    <div class="flex items-center gap-2.5">
+                        <span id="capFileName" class="text-xs font-mono text-emerald-400 bg-obsidian-950 px-2.5 py-1 rounded-lg border border-slate-800">proje_1.py</span>
+                        <span id="capLineCounter" class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-slate-800 text-slate-300">0 / 45 Satır</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="downloadCapstonePy()" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 transition cursor-pointer">
+                            <i data-lucide="file-down" class="w-3.5 h-3.5 text-sky-400"></i>
+                            <span>.py İndir</span>
+                        </button>
+                        <button onclick="runCodeInTerminal('capstone')" class="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20 transition cursor-pointer">
+                            <i data-lucide="play" class="w-4 h-4 fill-current"></i>
+                            <span>Projeyi Çalıştır</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex-1 min-h-[250px] editor-wrapper bg-[#0b101b] overflow-hidden">
+                    <div id="capstoneLineNumbers" class="line-numbers text-sm">1</div>
+                    <textarea id="capstoneEditor" spellcheck="false" autocomplete="off"
+                        class="code-textarea text-sm"
+                        placeholder="# 40-50 satırlık projeni buraya sıfırdan kodla..."></textarea>
+                </div>
+
+                <!-- Mobil Hızlı Kod Sembol Çubuğu (Proje Editörü İçin) -->
+                <div class="flex items-center gap-1.5 px-3 py-1.5 bg-obsidian-900/95 border-t border-slate-800/90 overflow-x-auto">
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500 shrink-0 mr-1">Hızlı Tuşlar:</span>
+                    <button type="button" onclick="insertCodeSnippet('capstone', '    ')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono font-bold text-indigo-300 shrink-0 cursor-pointer">Tab</button>
+                    <button type="button" onclick="insertCodeSnippet('capstone', ':')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono font-bold text-slate-200 shrink-0 cursor-pointer">:</button>
+                    <button type="button" onclick="insertCodeSnippet('capstone', '()', 1)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono font-bold text-slate-200 shrink-0 cursor-pointer">( )</button>
+                    <button type="button" onclick="insertCodeSnippet('capstone', '&quot;&quot;', 1)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono font-bold text-emerald-300 shrink-0 cursor-pointer">" "</button>
+                    <button type="button" onclick="insertCodeSnippet('capstone', '[]', 1)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono font-bold text-slate-200 shrink-0 cursor-pointer">[ ]</button>
+                    <button type="button" onclick="insertCodeSnippet('capstone', '{}', 1)" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono font-bold text-slate-200 shrink-0 cursor-pointer">{ }</button>
+                    <button type="button" onclick="insertCodeSnippet('capstone', ' = ')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono font-bold text-amber-300 shrink-0 cursor-pointer">=</button>
+                    <button type="button" onclick="insertCodeSnippet('capstone', ' == ')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-mono font-bold text-amber-300 shrink-0 cursor-pointer">==</button>
+                </div>
+
+                <div class="h-60 flex flex-col border-t border-slate-800 bg-[#070a11]">
+                    <div class="flex items-center justify-between px-4 py-2 bg-obsidian-900 border-b border-slate-800">
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                            <i data-lucide="terminal" class="w-4 h-4 text-emerald-400"></i> Proje Çalışma Terminali
+                        </span>
+                        <button onclick="resetTerminal('capstone')" class="text-xs text-slate-400 hover:text-white cursor-pointer">Temizle</button>
+                    </div>
+                    <div id="capstoneTerminalOut" class="flex-1 p-4 font-mono text-xs sm:text-sm overflow-y-auto space-y-1.5">
+                        <div class="text-slate-500">Proje terminali hazır. input() kullandığında veri giriş kutusu aşağıda otomatik açılır.</div>
+                    </div>
+                    <div id="capstoneTerminalInputBar" class="hidden items-center gap-2 px-3 py-2 bg-emerald-950/60 border-t border-emerald-500/40">
+                        <span class="text-emerald-400 font-mono text-xs font-bold shrink-0">GİRİŞ &gt;</span>
+                        <span id="capstoneInputPromptText" class="text-xs font-mono text-amber-300 truncate max-w-[45%]"></span>
+                        <input id="capstoneTerminalInputField" type="text" class="flex-1 bg-obsidian-950 border border-emerald-500/50 rounded-lg px-2.5 py-1 text-xs sm:text-sm font-mono text-white outline-none focus:ring-2 focus:ring-emerald-500" placeholder="Değeri yazıp Enter'a bas...">
+                        <button onclick="submitTerminalInput('capstone')" class="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold cursor-pointer">Gönder</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- ========================================================================
+         MOD 3: DETAYLI KONU NOTLARI & ÖRNEKLER KÜTÜPHANESİ
+         ======================================================================== -->
+    <div id="view-notes" class="hidden flex-1 max-w-[1400px] w-full mx-auto p-4 sm:p-6 space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+            <div>
+                <h2 class="text-2xl font-extrabold text-white">Detaylı Python Konu Notları & Açıklamalı Örnekler</h2>
+                <p class="text-sm text-slate-400 mt-1">Tüm 8 modülün kullanım mantığı, sözdizimi kuralları, sık yapılan hatalar ve çalışır örnek kodlar.</p>
+            </div>
+            <input id="notesSearchInput" oninput="renderFullNotesLibrary()" type="text" placeholder="Konu veya komut ara (ör: while, sözlük, küme, try, f-string)..."
+                class="w-full sm:w-80 px-4 py-2.5 rounded-xl bg-obsidian-900 border border-slate-700 text-sm text-white outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div id="fullNotesGrid" class="space-y-6"></div>
+    </div>
+
+    <!-- ========================================================================
+         MODAL 1: SARI KOMUT ÖZETİ SÖZLÜĞÜ
+         ======================================================================== -->
+    <div id="dictionaryModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-sm p-3 sm:p-6">
+        <div class="bg-obsidian-900 border-2 border-amber-400/60 rounded-3xl max-w-4xl w-full max-h-[88vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="flex items-center justify-between px-6 py-4 bg-amber-400 text-slate-950">
+                <div class="flex items-center gap-2.5">
+                    <i data-lucide="book-marked" class="w-6 h-6"></i>
+                    <div>
+                        <h3 class="font-extrabold text-base sm:text-lg">Sarı Python Komut Özeti Sözlüğü</h3>
+                        <p id="dictSubtitleText" class="text-xs font-semibold text-slate-800">Öğrendiğin Tüm Komutların Hızlı Başvuru Kartları</p>
+                    </div>
+                </div>
+                <button onclick="closeDictionaryModal()" class="p-2 rounded-xl bg-black/10 hover:bg-black/20 transition cursor-pointer">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-4 bg-obsidian-950 border-b border-slate-800 flex flex-wrap gap-2">
+                <input id="dictSearch" oninput="renderDictionary()" type="text" placeholder="Komut ara... (print, input, int, if, for, while, append, set, dict, def, try)"
+                    class="flex-1 min-w-[200px] px-4 py-2.5 rounded-xl bg-obsidian-900 border border-slate-700 text-sm text-white outline-none focus:ring-2 focus:ring-amber-400">
+            </div>
+            <div id="dictCardsContainer" class="flex-1 overflow-y-auto p-5 grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </div>
+    </div>
+
+    <!-- ========================================================================
+         MODAL 2: KAYIT & YEDEKLEME YÖNETİCİSİ
+         ======================================================================== -->
+    <div id="backupModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+        <div class="bg-obsidian-900 border border-slate-700 rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="font-extrabold text-lg text-white flex items-center gap-2">
+                    <i data-lucide="hard-drive" class="w-5 h-5 text-emerald-400"></i> Kayıt & Yedekleme Merkezi
+                </h3>
+                <button onclick="closeBackupModal()" class="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 cursor-pointer"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                Yazdığın tüm kodlar ve tamamladığın 40 görev tarayıcına <strong>otomatik olarak kaydedilir</strong>. Çalışmalarını bilgisayarına veya telefonuna dosya olarak indirebilirsin.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button onclick="downloadCurrentStepPy()" class="flex items-center justify-center gap-2 p-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs sm:text-sm transition cursor-pointer">
+                    <i data-lucide="file-code" class="w-4 h-4"></i> Aktif Kodu (.py) İndir
+                </button>
+                <button onclick="exportFullBackupJson()" class="flex items-center justify-center gap-2 p-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm transition cursor-pointer">
+                    <i data-lucide="download-cloud" class="w-4 h-4"></i> Tüm İlerlemeyi (.json) Yedekle
+                </button>
+            </div>
+            <div class="pt-3 border-t border-slate-800 space-y-2">
+                <label class="block text-xs font-bold text-slate-400">Yedek Dosyasından (.json) Geri Yükle:</label>
+                <input type="file" accept=".json" onchange="importBackupJson(event)" class="w-full text-xs text-slate-300 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-slate-800 file:text-white hover:file:bg-slate-700 cursor-pointer">
+            </div>
+        </div>
+    </div>
+
+    <!-- BİLDİRİM TOAST -->
+    <div id="toastNotification" class="fixed bottom-5 right-5 z-50 hidden items-center gap-2.5 px-4 py-3 rounded-2xl bg-emerald-600 text-white text-xs sm:text-sm font-bold shadow-2xl">
+        <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+        <span id="toastMessage">Kaydedildi!</span>
+    </div>
+
+    <script>
+        /* ============================================================================
+           1. DETAYLI KONU NOTLARI & AÇIKLAMALI ÖRNEKLER (8 MODÜL)
+           ============================================================================ */
+        const MODULE_NOTES = [
+            {
+                moduleId: 1,
+                title: "Modül 1: Python'a Giriş ve print() Çıktı İşlemleri",
+                summary: "Python yorumlayıcı (interpreter) tabanlı, satır satır çalışan yüksek seviyeli bir programlama dilidir. Ekrana çıktı vermek için print(), açıklama satırı için # kullanılır.",
+                sections: [
+                    {
+                        heading: "1. print(), sep ve end Parametreleri",
+                        body: "<code>print()</code> ekrana metin veya sayı yazdırır. <code>sep</code> virgülle ayrılan değerlerin arasına ne konulacağını, <code>end</code> ise satır sonunda alt satıra geçilip geçilmeyeceğini belirler.",
+                        code: `print("20", "11", "2026", sep="/")   # Çıktı: 20/11/2026\nprint("Merhaba", end=" ")             # Alt satıra geçmez\nprint("Python!")                      # Çıktı: Merhaba Python!`,
+                        explanation: "Varsayılan olarak <code>sep=\" \"</code> ve <code>end=\"\\n\"</code> şeklindedir."
+                    },
+                    {
+                        heading: "2. Kaçış Karakterleri (\\n ve \\t) ve Yorum Satırı (#)",
+                        body: "<code>\\n</code> alt satıra geçirir, <code>\\t</code> tab boşluğu bırakır. <code>#</code> işaretiyle başlayan satırlar Python tarafından çalıştırılmaz.",
+                        code: `# Tablo biçimlendirme örneği\nprint("Ad:\\tAyse\\nBolum:\\tBilisim")`,
+                        explanation: "Tek print() komutuyla çok satırlı düzenli çıktılar oluşturabilirsin."
+                    }
+                ]
+            },
+            {
+                moduleId: 2,
+                title: "Modül 2: Değişkenler ve Veri Tipleri",
+                summary: "Değişkenler verileri bellekte tutan etiketlerdir. int (tam sayı), float (ondalıklı), str (metin), bool (True/False) temel veri tipleridir.",
+                sections: [
+                    {
+                        heading: "1. Veri Tipleri ve type() Fonksiyonu",
+                        body: "Python atanan değere göre veri tipini otomatik belirler. Değişken isimleri rakamla başlayamaz ve boşluk içeremez.",
+                        code: `ad = "Kerem"          # str\nyas = 17              # int\nortalama = 91.5      # float\nbasarili = True       # bool\nprint(type(ortalama)) # <class 'float'>`,
+                        explanation: "Ondalıklı sayılarda virgül değil nokta (91.5) kullanılır."
+                    },
+                    {
+                        heading: "2. Tip Dönüşümleri (int, float, str) ve f-string",
+                        body: "Metin halindeki rakamları toplamak için <code>int()</code> veya <code>float()</code> kullanmalıyız. Metin içine değişken yerleştirmek için <code>f\"...\"</code> kullanılır.",
+                        code: `puan_str = "85"\npuan = int(puan_str) + 15\nprint(f"Guncel puaniniz: {puan}")`,
+                        explanation: "f-string içinde süslü parantez <code>{degisken}</code> kullanarak doğrudan hesaplama bile yapabilirsin."
+                    }
+                ]
+            },
+            {
+                moduleId: 3,
+                title: "Modül 3: Operatörler ve input() ile Kullanıcı Girişi",
+                summary: "input() kullanıcıdan veri alır ve her zaman str döndürür. Aritmetik (//, %, **) ve mantıksal (and, or, not) operatörlerle hesaplama ve karşılaştırma yapılır.",
+                sections: [
+                    {
+                        heading: "1. Kullanıcıdan Veri Alma: input()",
+                        body: "<code>input()</code> ile alınan değer her zaman metin (<code>str</code>) gelir. Sayısal işlem yapmadan önce <code>int()</code> veya <code>float()</code> ile dönüştürülmelidir.",
+                        code: `sayi = int(input("Bir sayi girin: "))\nprint(f"Sayinin 2 kati: {sayi * 2}")`,
+                        explanation: "Dönüşüm yapılmazsa <code>\"5\" * 2</code> işlemi <code>10</code> yerine <code>\"55\"</code> üretir!"
+                    },
+                    {
+                        heading: "2. Tam Bölme (//), Mod (%) ve Mantıksal Operatörler",
+                        body: "<code>//</code> tam bölümü, <code>%</code> kalanı, <code>**</code> üs almayı sağlar. Karşılaştırmada eşitlik <code>==</code> ile kontrol edilir.",
+                        code: `print(23 // 5)  # 4\nprint(23 % 5)   # 3\nprint(10 > 5 and 4 == 4)  # True`,
+                        explanation: "<code>and</code> tüm şartlar doğruysa, <code>or</code> en az biri doğruysa True verir."
+                    }
+                ]
+            },
+            {
+                moduleId: 4,
+                title: "Modül 4: Karar Yapıları (if - elif - else)",
+                summary: "Programın koşullara göre farklı yollar izlemesini sağlar. Koşul sonundaki iki nokta (:) ve 4 boşlukluk girinti kuralı zorunludur.",
+                sections: [
+                    {
+                        heading: "1. if - elif - else ve Girinti (Indentation) Kuralı",
+                        body: "Koşul satırının sonuna <code>:</code> konur ve altındaki kodlar 1 Tab (4 boşluk) içeriden yazılır.",
+                        code: `not_ort = 82\nif not_ort >= 85:\n    print("Takdir")\nelif not_ort >= 70:\n    print("Tesekkur")\nelse:\n    print("Belge Yok")`,
+                        explanation: "Yukarıdan aşağıya ilk doğru (True) olan blok çalışır."
+                    }
+                ]
+            },
+            {
+                moduleId: 5,
+                title: "Modül 5: Döngüler (while ve for)",
+                summary: "Tekrarlayan işlemleri otomatikleştirmek için for ve while döngüleri kullanılır. break döngüyü bitirir, continue o adımı atlar.",
+                sections: [
+                    {
+                        heading: "1. for Döngüsü ve range()",
+                        body: "<code>range(baslangic, bitis, artis)</code> yapısında bitiş değeri dahil edilmez.",
+                        code: `toplam = 0\nfor i in range(1, 6):\n    toplam += i\nprint("Toplam:", toplam)  # 15`,
+                        explanation: "<code>range(1, 6)</code> 1, 2, 3, 4, 5 sayılarını üretir."
+                    },
+                    {
+                        heading: "2. while Döngüsü, break ve continue",
+                        body: "<code>while</code> koşul True olduğu sürece çalışır. Sonsuz döngü olmaması için sayaç güncellenmelidir.",
+                        code: `sayac = 3\nwhile sayac > 0:\n    print(sayac)\n    sayac -= 1`,
+                        explanation: "<code>break</code> döngüyü kırar, <code>continue</code> sonraki tura geçer."
+                    }
+                ]
+            },
+            {
+                moduleId: 6,
+                title: "Modül 6: Listeler (list) ve Demetler (tuple)",
+                summary: "Listeler ([]) değiştirilebilir, demetler (()) değiştirilemez sıralı koleksiyonlardır. İndeksleme 0'dan başlar.",
+                sections: [
+                    {
+                        heading: "1. Liste Metotları (.append, .remove, len, sum, max)",
+                        body: "Listelere <code>.append()</code> ile eleman eklenir, <code>[0]</code> ilk elemanı, <code>[-1]</code> son elemanı verir.",
+                        code: `notlar = [70, 85, 95]\nnotlar.append(100)\nprint("En yuksek:", max(notlar))\nprint("Ortalama:", sum(notlar) / len(notlar))`,
+                        explanation: "<code>sum()</code> ve <code>len()</code> sayısal listelerde ortalama bulmayı çok kolaylaştırır."
+                    },
+                    {
+                        heading: "2. Demetler (Tuple)",
+                        body: "Normal parantez <code>()</code> ile oluşturulur. Sabit kalması gereken veriler (günler, koordinatlar vb.) için kullanılır.",
+                        code: `mevsimler = ("Ilkbahar", "Yaz", "Sonbahar", "Kis")\nprint(mevsimler[1])  # Yaz`,
+                        explanation: "Demetlerde eleman değiştirme (<code>mevsimler[0] = ...</code>) hata verir."
+                    }
+                ]
+            },
+            {
+                moduleId: 7,
+                title: "Modül 7: Sözlükler (dict) ve Kümeler (set)",
+                summary: "Sözlükler anahtar-değer (key-value) çiftleriyle çalışır. Kümeler (set) ise tekrar eden elemanları otomatik temizleyen benzersiz koleksiyonlardır.",
+                sections: [
+                    {
+                        heading: "1. Sözlük (Dictionary) Kullanımı",
+                        body: "Süslü parantez <code>{anahtar: deger}</code> ile tanımlanır. <code>.items()</code> hem anahtarı hem değeri verir.",
+                        code: `kisi = {"ad": "Ece", "yas": 16}\nkisi["sehir"] = "Ankara"\nfor k, v in kisi.items():\n    print(f"{k}: {v}")`,
+                        explanation: "Sözlüklerde verilere indeks numarasıyla değil anahtar adıyla erişilir."
+                    },
+                    {
+                        heading: "2. Kümeler (Set) ve Benzersiz Elemanlar",
+                        body: "<code>set()</code> veya <code>{1, 2, 3}</code> ile tanımlanır. Aynı elemanı iki kez tutmaz; kesişim (<code>&</code>) ve birleşim (<code>|</code>) işlemleri yapılabilir.",
+                        code: `sayilar = [1, 2, 2, 3, 3, 3]\nbenzersiz = set(sayilar)\nprint(len(benzersiz))  # 3`,
+                        explanation: "Bir listedeki tekrar eden kayıtları temizlemenin en kısa yolu <code>set(liste)</code> kullanmaktır."
+                    }
+                ]
+            },
+            {
+                moduleId: 8,
+                title: "Modül 8: Fonksiyonlar (def) ve Hata Yakalama (try-except)",
+                summary: "Tekrar kullanılabilir kod blokları için def ve return; programın çökmesini engellemek için try-except blokları kullanılır.",
+                sections: [
+                    {
+                        heading: "1. Fonksiyon Tanımlama (def & return)",
+                        body: "<code>def</code> ile fonksiyon tanımlanır, <code>return</code> ile hesaplanan sonuç dışarıya döndürülür.",
+                        code: `def alan_bul(en, boy):\n    return en * boy\n\nprint(alan_bul(5, 8))  # 40`,
+                        explanation: "Varsayılan parametreler (<code>def selam(ad='Misafir'):</code>) esneklik sağlar."
+                    },
+                    {
+                        heading: "2. Hata Yakalama (try - except)",
+                        body: "Olası hataları (sıfıra bölme, yanlış tip girişi) yakalayarak kullanıcıya düzgün mesaj verir.",
+                        code: `try:\n    sonuc = 50 / 0\nexcept ZeroDivisionError:\n    print("Sifira bolme hatasi engellendi!")`,
+                        explanation: "Büyük uygulamalarda programın aniden kapanmasını önler."
+                    }
+                ]
+            }
+        ];
+
+        /* ============================================================================
+           2. 8 MODÜL x 5 AŞAMALI ÖĞRENME ODAKLI SORU = TOPLAM 40 GÖREV
+           Her modül:
+           Aşama 1: Kavramı ilk kez uygulama
+           Aşama 2: Pekiştirme
+           Aşama 3: Küçük bir varyasyon
+           Aşama 4: İki kavramı birleştirme
+           Aşama 5: Modül sonu mini uygulama
+           ============================================================================ */
+        const CURRICULUM = [
+            // ==================== MODÜL 1 (5 Soru) ====================
+            {
+                id: 1,
+                title: "Modül 1: Python'a Giriş ve print()",
+                shortTitle: "Python'a Giriş & print",
+                unlockedCommands: ["print()", "# Yorum Satırı", "sep='...'", "end='...'", "\\n ve \\t Kaçış Karakterleri"],
+                questions: [
+                    {
+                        id: "m1_q1",
+                        stageLabel: "Aşama 1/5 • İlk Çıktı",
+                        title: "Ekrana İlk Mesajını Yazdır",
+                        fileName: "m1_gorev1.py",
+                        prompt: `Python'da ekrana yazı yazdırmak için <code>print()</code> fonksiyonu kullanılır. Sıfırdan kod yazarak ekrana tam olarak şu mesajı yazdır:<br>
+                        <code>Merhaba Python Dunyasi</code>`,
+                        expectedOutput: "Merhaba Python Dunyasi",
+                        quickSummary: "Metinleri <code>print(\"...\")</code> şeklinde çift veya tek tırnak içine alarak ekrana yazdırırız.",
+                        validate: (code, out) => out.trim() === "Merhaba Python Dunyasi",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: Ekrana 'Kodlamaya Basladim' yazdırma:",
+                                code: `print("Kodlamaya Basladim")`,
+                                reason: "print() parantezinin içine çift tırnakla yazdığımız metin ekranda aynen görünür."
+                            },
+                            logic: [
+                                "1. Editöre print() yaz.",
+                                "2. Parantezin içine çift tırnak açıp Merhaba Python Dunyasi yaz."
+                            ],
+                            hint: `print("Merhaba Python Dunyasi") yazıp Çalıştır butonuna bas.`,
+                            solution: `print("Merhaba Python Dunyasi")`
+                        }
+                    },
+                    {
+                        id: "m1_q2",
+                        stageLabel: "Aşama 2/5 • Pekiştirme",
+                        title: "Çok Satırlı Çıktı ve Yorum Satırı (#)",
+                        fileName: "m1_gorev2.py",
+                        prompt: `Kodunun en üstüne <code>#</code> ile kendi açıklama satırını ekle. Ardından iki ayrı <code>print()</code> kullanarak alt alta şunları yazdır:<br>
+                        1. satır: <code>Adim: Ogrenci</code><br>
+                        2. satır: <code>Hedefim: Python Ogrenmek</code>`,
+                        expectedOutput: "Adim: Ogrenci\nHedefim: Python Ogrenmek",
+                        quickSummary: "Python yorumlayıcısı kodları yukarıdan aşağıya satır satır çalıştırır. <code>#</code> ile başlayan satırlar açıklama içindir.",
+                        validate: (code, out) => {
+                            const lines = out.trim().split(/\r?\n/).map(s => s.trim());
+                            return code.includes("#") && lines[0] === "Adim: Ogrenci" && lines[1] === "Hedefim: Python Ogrenmek";
+                        },
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: Yorum satırı ve alt alta iki satır yazdırma:",
+                                code: `# Profil karti\nprint("Sehir: Ankara")\nprint("Ders: Bilisim")`,
+                                reason: "Her print() komutu ekranda yeni bir satır oluşturur."
+                            },
+                            logic: [
+                                "1. İlk satıra # Benim kodum yaz.",
+                                "2. İkinci satıra print(\"Adim: Ogrenci\") yaz.",
+                                "3. Üçüncü satıra print(\"Hedefim: Python Ogrenmek\") yaz."
+                            ],
+                            hint: "Kodunda mutlaka # işareti bulunmalıdır.",
+                            solution: `# Ogrenci tanitim kodu\nprint("Adim: Ogrenci")\nprint("Hedefim: Python Ogrenmek")`
+                        }
+                    },
+                    {
+                        id: "m1_q3",
+                        stageLabel: "Aşama 3/5 • Varyasyon",
+                        title: "sep Parametresi ile Ayraç Belirleme",
+                        fileName: "m1_gorev3.py",
+                        prompt: `Tek bir <code>print()</code> içinde <code>"22"</code>, <code>"11"</code> ve <code>"2026"</code> değerlerini virgülle ayırarak yaz; <code>sep</code> parametresini kullanarak aralarına tire (<code>-</code>) koy ve ekrana <code>22-11-2026</code> yazdır.`,
+                        expectedOutput: "22-11-2026",
+                        quickSummary: "<code>print(\"A\", \"B\", sep=\"-\")</code> komutu öğelerin arasına boşluk yerine tire koyar.",
+                        validate: (code, out) => out.trim() === "22-11-2026" && code.includes("sep"),
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: '10', '20', '30' sayılarını arasına yıldız koyarak yazdırma:",
+                                code: `print("10", "20", "30", sep="*")`,
+                                reason: "sep (separator) parametresi virgülle ayrılan değerlerin arasına ne konulacağını seçer."
+                            },
+                            logic: [
+                                "1. print(\"22\", \"11\", \"2026\", sep=\"-\") yaz."
+                            ],
+                            hint: `sep="-" parametresini en sona eklemeyi unutma.`,
+                            solution: `print("22", "11", "2026", sep="-")`
+                        }
+                    },
+                    {
+                        id: "m1_q4",
+                        stageLabel: "Aşama 4/5 • Birleştirme",
+                        title: "end Parametresi ile Satır Birleştirme",
+                        fileName: "m1_gorev4.py",
+                        prompt: `İki ayrı <code>print()</code> komutu kullanarak; birincisinde <code>"Python"</code>, ikincisinde <code>"3.11"</code> yazdır ama <code>end</code> parametresi sayesinde çıktının tek satırda <code>Python 3.11</code> olmasını sağla.`,
+                        expectedOutput: "Python 3.11",
+                        quickSummary: "İlk <code>print()</code> içine <code>end=\" \"</code> eklersen imleç alt satıra geçmez, bir boşluk bırakıp bekler.",
+                        validate: (code, out) => {
+                            const prints = (code.match(/print\s*\(/g) || []).length;
+                            return out.trim() === "Python 3.11" && prints >= 2 && code.includes("end");
+                        },
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: İki print ile 'Hos Geldin' yazdırma:",
+                                code: `print("Hos", end=" ")\nprint("Geldin")`,
+                                reason: "end=\" \" satır sonundaki yeni satır karakterini boşlukla değiştirir."
+                            },
+                            logic: [
+                                "1. print(\"Python\", end=\" \") yaz.",
+                                "2. Alt satıra print(\"3.11\") yaz."
+                            ],
+                            hint: `İlk print içine end=" " yazmalısın.`,
+                            solution: `print("Python", end=" ")\nprint("3.11")`
+                        }
+                    },
+                    {
+                        id: "m1_q5",
+                        stageLabel: "Aşama 5/5 • Modül Uygulaması",
+                        title: "Modül 1 Final: Tek Komutla Kasa Fişi Başlığı",
+                        fileName: "m1_gorev5.py",
+                        prompt: `<strong>Tek bir</strong> <code>print()</code> komutu ve <code>\\n</code> kaçış karakterini kullanarak ekrana alt alta şu 3 satırlık fiş başlığını yazdır:<br>
+                        <code>=== PYTHON MARKET ===</code><br>
+                        <code>Urun: Defter</code><br>
+                        <code>Fiyat: 45 TL</code>`,
+                        expectedOutput: "=== PYTHON MARKET ===\nUrun: Defter\nFiyat: 45 TL",
+                        quickSummary: "Metin içindeki <code>\\n</code> karakteri yazıyı tam o noktadan bir alt satıra indirir.",
+                        validate: (code, out) => {
+                            const prints = (code.match(/print\s*\(/g) || []).length;
+                            const lines = out.trim().split(/\r?\n/).map(s => s.trim());
+                            return prints === 1 && code.includes("\\n") && lines.join("|") === "=== PYTHON MARKET ===|Urun: Defter|Fiyat: 45 TL";
+                        },
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: Tek print ile 2 satırlık etiket yazdırma:",
+                                code: `print("=== ETIKET ===\\nAdet: 5")`,
+                                reason: "\\n yanına boşluk koymadan bir sonraki satırın metnini yazmalısın."
+                            },
+                            logic: [
+                                "1. Tek bir print(\"\") aç.",
+                                "2. Satır aralarına \\n koyarak üç satırı birleştir."
+                            ],
+                            hint: `print("=== PYTHON MARKET ===\\nUrun: Defter\\nFiyat: 45 TL")`,
+                            solution: `print("=== PYTHON MARKET ===\\nUrun: Defter\\nFiyat: 45 TL")`
+                        }
+                    }
+                ]
+            },
+
+            // ==================== MODÜL 2 (5 Soru) ====================
+            {
+                id: 2,
+                title: "Modül 2: Değişkenler ve Veri Tipleri",
+                shortTitle: "Değişkenler & Veri Tipleri",
+                unlockedCommands: ["int / float / str / bool", "type()", "int() & float() Dönüşümü", 'f"..." (f-string)'],
+                questions: [
+                    {
+                        id: "m2_q1",
+                        stageLabel: "Aşama 1/5 • İlk Değişkenler",
+                        title: "Değişken Tanımlama ve Yazdırma",
+                        fileName: "m2_gorev1.py",
+                        prompt: `<code>okul = "Ataturk Lisesi"</code> ve <code>sinif = 10</code> değişkenlerini tanımla, ardından her ikisini alt alta <code>print()</code> ile ekrana yazdır.`,
+                        expectedOutput: "Ataturk Lisesi\n10",
+                        quickSummary: "Değişkenleri <code>print()</code> içine yazarken tırnak kullanılmaz; tırnak koyarsan değişkenin adını yazdırırsın.",
+                        validate: (code, out) => {
+                            const lines = out.trim().split(/\r?\n/).map(s => s.trim());
+                            return code.includes("okul") && code.includes("sinif") && lines[0] === "Ataturk Lisesi" && lines[1] === "10";
+                        },
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: Takım ve puan değişkenlerini yazdırma:",
+                                code: `takim = "Yildizlar"\npuan = 24\nprint(takim)\nprint(puan)`,
+                                reason: "Metin değerler tırnak içinde, sayısal değerler tırnaksız atanır."
+                            },
+                            logic: [
+                                "1. okul = \"Ataturk Lisesi\" yaz.",
+                                "2. sinif = 10 yaz.",
+                                "3. print(okul) ve print(sinif) satırlarını ekle."
+                            ],
+                            hint: "print(okul) yazarken okul kelimesini tırnak içine alma.",
+                            solution: `okul = "Ataturk Lisesi"\nsinif = 10\nprint(okul)\nprint(sinif)`
+                        }
+                    },
+                    {
+                        id: "m2_q2",
+                        stageLabel: "Aşama 2/5 • Veri Tipleri",
+                        title: "Ondalıklı (float) ve Mantıksal (bool) Tipler",
+                        fileName: "m2_gorev2.py",
+                        prompt: `<code>fiyat = 49.90</code> (float) ve <code>stokta_var = True</code> (bool) değişkenlerini oluştur. Ekrana önce <code>type(fiyat)</code> çıktısını, alt satıra ise <code>stokta_var</code> değerini yazdır.`,
+                        expectedOutput: "<class 'float'>\nTrue",
+                        quickSummary: "<code>type(degisken)</code> o değişkenin veri sınıfını gösterir. Mantıksal değerler <code>True</code> veya <code>False</code> (ilk harfi büyük) yazılır.",
+                        validate: (code, out) => {
+                            const lines = out.trim().split(/\r?\n/).map(s => s.trim());
+                            return code.includes("type(") && lines[0] === "<class 'float'>" && lines[1] === "True";
+                        },
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: Tam sayının tipini yazdırma:",
+                                code: `adet = 5\nprint(type(adet))  # <class 'int'>`,
+                                reason: "Ondalıklı sayılarda nokta kullanıldığında Python tipi float olarak belirler."
+                            },
+                            logic: [
+                                "1. fiyat = 49.90 ve stokta_var = True tanımla.",
+                                "2. print(type(fiyat)) ve print(stokta_var) yaz."
+                            ],
+                            hint: "True kelimesinin baş harfi büyük olmalıdır.",
+                            solution: `fiyat = 49.90\nstokta_var = True\nprint(type(fiyat))\nprint(stokta_var)`
+                        }
+                    },
+                    {
+                        id: "m2_q3",
+                        stageLabel: "Aşama 3/5 • Tip Dönüşümü",
+                        title: "Metni Sayıya Çevirip Toplama (int)",
+                        fileName: "m2_gorev3.py",
+                        prompt: `<code>s1 = "35"</code> ve <code>s2 = "65"</code> şeklinde metin (str) olarak verilen iki değişkeni tanımla. <code>int()</code> ile tam sayıya çevirip topla ve ekrana <code>100</code> yazdır.`,
+                        expectedOutput: "100",
+                        quickSummary: "<code>\"35\" + \"65\"</code> yan yana yapıştırıp <code>\"3565\"</code> yapar. Matematiksel toplama için <code>int()</code> şarttır.",
+                        validate: (code, out) => code.includes("int(") && out.trim() === "100",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: '15' ve '25' metinlerini toplama:",
+                                code: `a = "15"\nb = "25"\nprint(int(a) + int(b))`,
+                                reason: "int() fonksiyonu tırnak içindeki sayıyı tam sayıya dönüştürür."
+                            },
+                            logic: [
+                                "1. s1 = \"35\" ve s2 = \"65\" tanımla.",
+                                "2. print(int(s1) + int(s2)) yaz."
+                            ],
+                            hint: "int(s1) + int(s2) ifadesini kullan.",
+                            solution: `s1 = "35"\ns2 = "65"\nprint(int(s1) + int(s2))`
+                        }
+                    },
+                    {
+                        id: "m2_q4",
+                        stageLabel: "Aşama 4/5 • f-string",
+                        title: "f-string ile Dinamik Mesaj Oluşturma",
+                        fileName: "m2_gorev4.py",
+                        prompt: `<code>oyuncu = "Kaan"</code> ve <code>seviye = 12</code> değişkenlerini tanımla. <strong>f-string</strong> (<code>f"..."</code>) kullanarak ekrana tam olarak şu çıktıyı yazdır:<br>
+                        <code>Oyuncu Kaan, Seviye: 12</code>`,
+                        expectedOutput: "Oyuncu Kaan, Seviye: 12",
+                        quickSummary: "<code>f\"Metin {degisken}\"</code> metinle değişkenleri en temiz birleştirme yöntemidir.",
+                        validate: (code, out) => out.trim() === "Oyuncu Kaan, Seviye: 12" && (code.includes('f"') || code.includes("f'")),
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: Ders ve notu f-string ile yazdırma:",
+                                code: `ders = "Matematik"\npuan = 95\nprint(f"Ders: {ders}, Puan: {puan}")`,
+                                reason: "Tırnaktan önceki f harfi süslü parantezlerin içindeki değişkenleri değerleriyle değiştirir."
+                            },
+                            logic: [
+                                "1. oyuncu = \"Kaan\" ve seviye = 12 tanımla.",
+                                "2. print(f\"Oyuncu {oyuncu}, Seviye: {seviye}\") yaz."
+                            ],
+                            hint: "Virgül ve iki nokta işaretlerinin yerini kontrol et.",
+                            solution: `oyuncu = "Kaan"\nseviye = 12\nprint(f"Oyuncu {oyuncu}, Seviye: {seviye}")`
+                        }
+                    },
+                    {
+                        id: "m2_q5",
+                        stageLabel: "Aşama 5/5 • Modül Uygulaması",
+                        title: "Modül 2 Final: Not Ortalaması Kartı",
+                        fileName: "m2_gorev5.py",
+                        prompt: `<code>ogrenci = "Selin"</code>, <code>sinav1 = 80</code> ve <code>sinav2 = 90</code> değişkenlerini tanımla. İki sınavın ortalamasını hesapla (<code>(sinav1 + sinav2) / 2</code>) ve <strong>f-string</strong> ile ekrana şu çıktıyı yazdır:<br>
+                        <code>Selin adli ogrencinin ortalamasi: 85.0</code>`,
+                        expectedOutput: "Selin adli ogrencinin ortalamasi: 85.0",
+                        quickSummary: "Bölme işlemi (<code>/</code>) sonucu otomatik olarak ondalıklı (<code>85.0</code>) üretir.",
+                        validate: (code, out) => out.trim() === "Selin adli ogrencinin ortalamasi: 85.0" && (code.includes('f"') || code.includes("f'")),
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: İki sayının ortalamasını f-string ile yazdırma:",
+                                code: `ad = "Ali"\na = 70\nb = 80\nort = (a + b) / 2\nprint(f"{ad} ortalamasi: {ort}")`,
+                                reason: "Toplama işlemini parantez içine almalıyız ki önce toplama sonra bölme yapılsın."
+                            },
+                            logic: [
+                                "1. ogrenci, sinav1, sinav2 değişkenlerini tanımla.",
+                                "2. ort = (sinav1 + sinav2) / 2 hesapla.",
+                                "3. f-string ile istenen cümleyi yazdır."
+                            ],
+                            hint: "(sinav1 + sinav2) / 2 parantezlerini unutma.",
+                            solution: `ogrenci = "Selin"\nsinav1 = 80\nsinav2 = 90\nort = (sinav1 + sinav2) / 2\nprint(f"{ogrenci} adli ogrencinin ortalamasi: {ort}")`
+                        }
+                    }
+                ]
+            },
+
+            // ==================== MODÜL 3 (5 Soru) ====================
+            {
+                id: 3,
+                title: "Modül 3: Operatörler ve input()",
+                shortTitle: "Operatörler & input()",
+                unlockedCommands: ["input()", "// Tam Bölme", "% Mod (Kalan)", "** Üs Alma", "and / or / not"],
+                questions: [
+                    {
+                        id: "m3_q1",
+                        stageLabel: "Aşama 1/5 • Kullanıcı Girişi",
+                        title: "input() ile Kullanıcıdan İsim Alma",
+                        fileName: "m3_gorev1.py",
+                        mockInputs: ["Emre"],
+                        mockInputLabel: "Test Girişi: Emre",
+                        prompt: `Kullanıcıdan <code>input()</code> fonksiyonuyla adını al ve <code>Hos geldin {isim}</code> mesajını ekrana yazdır.<br>
+                        <span class="text-xs text-amber-300">(Kontrol sırasında programa otomatik olarak <code>Emre</code> girilecektir.)</span>`,
+                        expectedOutput: "Hos geldin Emre",
+                        quickSummary: "<code>ad = input(\"Adiniz: \")</code> kullanıcının klavyeden girdiği metni <code>ad</code> değişkenine kaydeder.",
+                        validate: (code, out) => code.includes("input(") && out.trim().endsWith("Hos geldin Emre"),
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: Şehir adı alıp selamlama:",
+                                code: `sehir = input("Sehir: ")\nprint(f"Selam {sehir}")`,
+                                reason: "input() metin döndürdüğü için doğrudan f-string içinde kullanabiliriz."
+                            },
+                            logic: [
+                                "1. isim = input(\"Adiniz: \") yaz.",
+                                "2. print(f\"Hos geldin {isim}\") yaz."
+                            ],
+                            hint: "input() fonksiyonunu mutlaka kullanmalısın.",
+                            solution: `isim = input("Adiniz: ")\nprint(f"Hos geldin {isim}")`
+                        }
+                    },
+                    {
+                        id: "m3_q2",
+                        stageLabel: "Aşama 2/5 • Sayısal input()",
+                        title: "Kullanıcıdan Sayı Alıp Kare Hesaplama",
+                        fileName: "m3_gorev2.py",
+                        mockInputs: ["6"],
+                        mockInputLabel: "Test Girişi: 6",
+                        prompt: `Kullanıcıdan <code>input()</code> ile bir tam sayı al (<code>int()</code> dönüşümü yap) ve üs alma (<code>**</code>) operatörünü kullanarak sayının karesini (<code>36</code>) ekrana yazdır.`,
+                        expectedOutput: "36",
+                        quickSummary: "Sayısal girişlerde <code>sayi = int(input(...))</code> kalıbı kullanılır; karesi <code>sayi ** 2</code> ile alınır.",
+                        validate: (code, out) => code.includes("input(") && code.includes("int(") && code.includes("**") && out.trim().endsWith("36"),
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: Girilen sayının küpünü bulma:",
+                                code: `n = int(input("Sayi: "))\nprint(n ** 3)`,
+                                reason: "int() dönüşümü yapmadan ** operatörü metinlerde çalışmaz."
+                            },
+                            logic: [
+                                "1. sayi = int(input(\"Sayi girin: \"))",
+                                "2. print(sayi ** 2)"
+                            ],
+                            hint: "** operatörünü kullanmayı unutma.",
+                            solution: `sayi = int(input("Sayi girin: "))\nprint(sayi ** 2)`
+                        }
+                    },
+                    {
+                        id: "m3_q3",
+                        stageLabel: "Aşama 3/5 • Tam Bölme & Mod",
+                        title: "Dakikayı Saat ve Dakikaya Çevirme (// ve %)",
+                        fileName: "m3_gorev3.py",
+                        prompt: `<code>toplam_dk = 195</code> değişkenini tanımla. Tam bölme (<code>//</code>) ve kalan bulma (<code>%</code>) operatörlerini kullanarak ekrana şu çıktıyı yazdır:<br>
+                        <code>3 saat 15 dakika</code>`,
+                        expectedOutput: "3 saat 15 dakika",
+                        quickSummary: "<code>195 // 60</code> tam saati (3), <code>195 % 60</code> artan dakikayı (15) verir.",
+                        validate: (code, out) => code.includes("//") && code.includes("%") && out.trim() === "3 saat 15 dakika",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: 130 saniyeyi dakika ve saniyeye çevirme:",
+                                code: `sn = 130\ndk = sn // 60\nkalan = sn % 60\nprint(f"{dk} dakika {kalan} saniye")`,
+                                reason: "// bölümün tam kısmını, % ise kalanı hesaplar."
+                            },
+                            logic: [
+                                "1. toplam_dk = 195 tanımla.",
+                                "2. saat = toplam_dk // 60 ve dk = toplam_dk % 60 hesapla.",
+                                "3. print(f\"{saat} saat {dk} dakika\") yazdır."
+                            ],
+                            hint: "// ve % operatörlerinin ikisi de kodunda yer almalı.",
+                            solution: `toplam_dk = 195\nsaat = toplam_dk // 60\ndk = toplam_dk % 60\nprint(f"{saat} saat {dk} dakika")`
+                        }
+                    },
+                    {
+                        id: "m3_q4",
+                        stageLabel: "Aşama 4/5 • Mantıksal Operatörler",
+                        title: "and / or ile Koşul İfadesi Oluşturma",
+                        fileName: "m3_gorev4.py",
+                        prompt: `<code>puan = 88</code> ve <code>devamsizlik = 3</code> değişkenlerini tanımla. Bir öğrencinin belge alabilmesi için puanının <strong>85 ve üzeri</strong> (<code>>=</code>) <strong>VE</strong> (<code>and</code>) devamsızlığının <strong>5'ten az</strong> (<code><</code>) olması gerekir. Bu mantıksal karşılaştırmanın sonucunu (<code>True</code>) ekrana yazdır.`,
+                        expectedOutput: "True",
+                        quickSummary: "<code>and</code> operatörü iki tarafındaki koşulun da <code>True</code> olmasını şart koşar.",
+                        validate: (code, out) => code.includes("and") && out.trim() === "True",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: Yaş 18'den büyük ve ehliyet var mı?",
+                                code: `yas = 20\nehliyet = True\nprint(yas >= 18 and ehliyet)`,
+                                reason: "Karşılaştırma operatörleri doğrudan True veya False sonucu üretir."
+                            },
+                            logic: [
+                                "1. puan = 88 ve devamsizlik = 3 tanımla.",
+                                "2. print(puan >= 85 and devamsizlik < 5) yaz."
+                            ],
+                            hint: "and bağlacını kullanmalısın.",
+                            solution: `puan = 88\ndevamsizlik = 3\nprint(puan >= 85 and devamsizlik < 5)`
+                        }
+                    },
+                    {
+                        id: "m3_q5",
+                        stageLabel: "Aşama 5/5 • Modül Uygulaması",
+                        title: "Modül 3 Final: Dikdörtgen Alan ve Çevre Hesaplayıcı",
+                        fileName: "m3_gorev5.py",
+                        mockInputs: ["5", "12"],
+                        mockInputLabel: "Test Girişleri: 5 ve 12",
+                        prompt: `Kullanıcıdan sırasıyla <code>kisa</code> ve <code>uzun</code> kenar uzunluklarını <code>int(input(...))</code> ile al. Alanı (<code>kisa * uzun</code>) ve çevreyi (<code>2 * (kisa + uzun)</code>) hesaplayıp ekrana şu formatta yazdır:<br>
+                        <code>Alan: 60, Cevre: 34</code>`,
+                        expectedOutput: "Alan: 60, Cevre: 34",
+                        quickSummary: "İki kez <code>int(input(...))</code> kullanarak sırayla iki kenar uzunluğunu okuyabilirsin.",
+                        validate: (code, out) => {
+                            const inputs = (code.match(/input\s*\(/g) || []).length;
+                            return inputs >= 2 && out.trim().endsWith("Alan: 60, Cevre: 34");
+                        },
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: İki sayı alıp toplam ve farkını yazdırma:",
+                                code: `a = int(input("a: "))\nb = int(input("b: "))\nprint(f"Toplam: {a+b}, Fark: {a-b}")`,
+                                reason: "Çevre formülünde 2 * (kisa + uzun) parantezine dikkat etmelisin."
+                            },
+                            logic: [
+                                "1. kisa = int(input(\"Kisa kenar: \"))",
+                                "2. uzun = int(input(\"Uzun kenar: \"))",
+                                "3. alan = kisa * uzun ve cevre = 2 * (kisa + uzun)",
+                                "4. print(f\"Alan: {alan}, Cevre: {cevre}\")"
+                            ],
+                            hint: "Çıktıda Türkçe karakter olmadan 'Cevre' yazmalısın.",
+                            solution: `kisa = int(input("Kisa kenar: "))\nuzun = int(input("Uzun kenar: "))\nalan = kisa * uzun\ncevre = 2 * (kisa + uzun)\nprint(f"Alan: {alan}, Cevre: {cevre}")`
+                        }
+                    }
+                ]
+            },
+
+            // ==================== MODÜL 4 (5 Soru) ====================
+            {
+                id: 4,
+                title: "Modül 4: Karar Yapıları (if - elif - else)",
+                shortTitle: "Karar Yapıları (if-elif-else)",
+                unlockedCommands: ["if kosul:", "elif kosul:", "else:", "4 Boşluk Girinti (Indentation)"],
+                questions: [
+                    {
+                        id: "m4_q1",
+                        stageLabel: "Aşama 1/5 • Temel if",
+                        title: "Basit Koşul Kontrolü (if)",
+                        fileName: "m4_gorev1.py",
+                        prompt: `<code>sicaklik = 34</code> değişkenini tanımla. Eğer sıcaklık <strong>30'dan büyükse</strong> (<code>> 30</code>) ekrana <code>Hava Cok Sicak</code> yazdıran <code>if</code> bloğunu yaz.`,
+                        expectedOutput: "Hava Cok Sicak",
+                        quickSummary: "<code>if sicaklik > 30:</code> satırından sonra alt satırı 4 boşluk (1 Tab) içeriden yaz.",
+                        validate: (code, out) => code.includes("if") && out.trim() === "Hava Cok Sicak",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: Puan 50'den büyükse 'Gecti' yazdırma:",
+                                code: `puan = 75\nif puan > 50:\n    print("Gecti")`,
+                                reason: "Koşul sonundaki : işareti ve alt satırdaki girinti zorunludur."
+                            },
+                            logic: [
+                                "1. sicaklik = 34 tanımla.",
+                                "2. if sicaklik > 30: yaz ve alt satıra girintili print(\"Hava Cok Sicak\") ekle."
+                            ],
+                            hint: "if satırının sonuna iki nokta (:) koymayı unutma.",
+                            solution: `sicaklik = 34\nif sicaklik > 30:\n    print("Hava Cok Sicak")`
+                        }
+                    },
+                    {
+                        id: "m4_q2",
+                        stageLabel: "Aşama 2/5 • if - else",
+                        title: "İki Durumlu Karar: Tek mi Çift mi?",
+                        fileName: "m4_gorev2.py",
+                        prompt: `<code>sayi = 48</code> değişkenini tanımla. <code>if - else</code> yapısını kullanarak sayı 2'ye tam bölünüyorsa (<code>sayi % 2 == 0</code>) ekrana <code>Cift Sayi</code>, değilse <code>Tek Sayi</code> yazdır.`,
+                        expectedOutput: "Cift Sayi",
+                        quickSummary: "<code>if</code> koşulu yanlış olduğunda <code>else:</code> bloğu devreye girer.",
+                        validate: (code, out) => code.includes("if") && code.includes("else") && out.trim() === "Cift Sayi",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: Sayı pozitif mi negatif mi?",
+                                code: `x = -5\nif x >= 0:\n    print("Pozitif")\nelse:\n    print("Negatif")`,
+                                reason: "else satırının yanında koşul yazılmaz, doğrudan else: konur."
+                            },
+                            logic: [
+                                "1. sayi = 48 tanımla.",
+                                "2. if sayi % 2 == 0: -> print(\"Cift Sayi\")",
+                                "3. else: -> print(\"Tek Sayi\")"
+                            ],
+                            hint: "sayi % 2 == 0 kontrolünü kullan.",
+                            solution: `sayi = 48\nif sayi % 2 == 0:\n    print("Cift Sayi")\nelse:\n    print("Tek Sayi")`
+                        }
+                    },
+                    {
+                        id: "m4_q3",
+                        stageLabel: "Aşama 3/5 • if - elif - else",
+                        title: "Çoklu Durum: Pozitif, Negatif veya Sıfır",
+                        fileName: "m4_gorev3.py",
+                        prompt: `<code>deger = 0</code> değişkeni için <code>if - elif - else</code> yapısı kur:<br>
+                        • 0'dan büyükse <code>Pozitif</code><br>
+                        • 0'dan küçükse <code>Negatif</code><br>
+                        • İkisi de değilse <code>Sifir</code> yazdır.`,
+                        expectedOutput: "Sifir",
+                        quickSummary: "Üç veya daha fazla olasılık olduğunda ara koşullar için <code>elif</code> kullanılır.",
+                        validate: (code, out) => code.includes("if") && code.includes("elif") && code.includes("else") && out.trim() === "Sifir",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: Sınav notu derecelendirme:",
+                                code: `n = 75\nif n >= 85:\n    print("Pekiyi")\nelif n >= 50:\n    print("Gecer")\nelse:\n    print("Kaldi")`,
+                                reason: "elif 'aksi halde eğer' anlamına gelir."
+                            },
+                            logic: [
+                                "1. deger = 0 tanımla.",
+                                "2. if deger > 0: ... elif deger < 0: ... else: print(\"Sifir\")"
+                            ],
+                            hint: "elif bloğunu mutlaka kullanmalısın.",
+                            solution: `deger = 0\nif deger > 0:\n    print("Pozitif")\nelif deger < 0:\n    print("Negatif")\nelse:\n    print("Sifir")`
+                        }
+                    },
+                    {
+                        id: "m4_q4",
+                        stageLabel: "Aşama 4/5 • input() + if-elif-else",
+                        title: "Bilet Fiyatı Hesaplama (Yaş Tarifesi)",
+                        fileName: "m4_gorev4.py",
+                        mockInputs: ["15"],
+                        mockInputLabel: "Test Girişi: 15",
+                        prompt: `Kullanıcıdan <code>int(input(...))</code> ile yaşını al:<br>
+                        • Yaş <strong>12'den küçükse</strong> bilet ücreti <code>20 TL</code><br>
+                        • Yaş <strong>12 ile 65 arasındaysa</strong> (12 ve 65 dahil) bilet ücreti <code>50 TL</code><br>
+                        • Yaş <strong>65'ten büyükse</strong> bilet ücreti <code>15 TL</code> yazdır.`,
+                        expectedOutput: "50 TL",
+                        quickSummary: "Kullanıcıdan alınan sayıyı <code>if - elif - else</code> basamaklarıyla kategorilere ayırabiliriz.",
+                        validate: (code, out) => code.includes("input(") && code.includes("elif") && out.trim().endsWith("50 TL"),
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: Hız sınırına göre mesaj yazdırma:",
+                                code: `hiz = int(input("Hiz: "))\nif hiz < 50:\n    print("Yavas")\nelif hiz <= 90:\n    print("Normal")\nelse:\n    print("Hizli")`,
+                                reason: "İlk koşul < 12 olduğu için elif kısmında <= 65 yazmak 12-65 aralığını yakalar."
+                            },
+                            logic: [
+                                "1. yas = int(input(\"Yasiniz: \"))",
+                                "2. if yas < 12: print(\"20 TL\")",
+                                "3. elif yas <= 65: print(\"50 TL\")",
+                                "4. else: print(\"15 TL\")"
+                            ],
+                            hint: "Çıktı formatı tam olarak '50 TL' olmalıdır.",
+                            solution: `yas = int(input("Yasiniz: "))\nif yas < 12:\n    print("20 TL")\nelif yas <= 65:\n    print("50 TL")\nelse:\n    print("15 TL")`
+                        }
+                    },
+                    {
+                        id: "m4_q5",
+                        stageLabel: "Aşama 5/5 • Modül Uygulaması",
+                        title: "Modül 4 Final: Giriş ve Yetki Kontrol Sistemi",
+                        fileName: "m4_gorev5.py",
+                        mockInputs: ["yonetici", "2026"],
+                        mockInputLabel: "Test Girişleri: yonetici ve 2026",
+                        prompt: `Kullanıcıdan sırasıyla <code>kadi</code> ve <code>parola</code> değerlerini <code>input()</code> ile al:<br>
+                        • Eğer <code>kadi == "yonetici"</code> <strong>ve</strong> <code>parola == "2026"</code> ise ekrana <code>Tam Yetki Verildi</code><br>
+                        • Sadece kullanıcı adı <code>"yonetici"</code> ama parola yanlışsa <code>Yanlis Parola</code><br>
+                        • Diğer tüm durumlarda <code>Kullanici Bulunamadi</code> yazdır.`,
+                        expectedOutput: "Tam Yetki Verildi",
+                        quickSummary: "İki koşulu <code>and</code> ile birleştirerek önce tam eşleşmeyi, <code>elif</code> ile kısmi eşleşmeyi kontrol edebilirsin.",
+                        validate: (code, out) => code.includes("input(") && code.includes("elif") && out.trim().endsWith("Tam Yetki Verildi"),
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: PIN ve güvenlik sorusu kontrolü:",
+                                code: `pin = input("PIN: ")\nkod = input("Kod: ")\nif pin == "1111" and kod == "A":\n    print("Acildi")\nelif pin == "1111":\n    print("Kod hatali")\nelse:\n    print("PIN hatali")`,
+                                reason: "Önce en özel durumu (ikisinin de doğru olması) kontrol etmek en güvenli yöntemdir."
+                            },
+                            logic: [
+                                "1. kadi = input(...) ve parola = input(...)",
+                                "2. if kadi == \"yonetici\" and parola == \"2026\": print(\"Tam Yetki Verildi\")",
+                                "3. elif kadi == \"yonetici\": print(\"Yanlis Parola\")",
+                                "4. else: print(\"Kullanici Bulunamadi\")"
+                            ],
+                            hint: "input() metin döndürdüğü için parolayı \"2026\" olarak tırnakla karşılaştır.",
+                            solution: `kadi = input("Kullanici adi: ")\nparola = input("Parola: ")\nif kadi == "yonetici" and parola == "2026":\n    print("Tam Yetki Verildi")\nelif kadi == "yonetici":\n    print("Yanlis Parola")\nelse:\n    print("Kullanici Bulunamadi")`
+                        }
+                    }
+                ]
+            },
+
+            // ==================== MODÜL 5 (5 Soru) ====================
+            {
+                id: 5,
+                title: "Modül 5: Döngüler (while ve for)",
+                shortTitle: "Döngüler (while & for)",
+                unlockedCommands: ["for i in range():", "while kosul:", "break (Döngüyü Kır)", "continue (Adımı Atla)"],
+                questions: [
+                    {
+                        id: "m5_q1",
+                        stageLabel: "Aşama 1/5 • İlk for Döngüsü",
+                        title: "range() ile Sayıları Yazdırma",
+                        fileName: "m5_gorev1.py",
+                        prompt: `<code>for</code> döngüsü ve <code>range()</code> kullanarak <strong>1'den 5'e kadar (5 dahil)</strong> sayıları alt alta ekrana yazdır.`,
+                        expectedOutput: "1\n2\n3\n4\n5",
+                        quickSummary: "<code>range(1, 6)</code> 1'den başlar ve 6'ya gelmeden durur (1, 2, 3, 4, 5).",
+                        validate: (code, out) => code.includes("for") && code.includes("range") && out.trim().split(/\r?\n/).map(s=>s.trim()).join(",") === "1,2,3,4,5",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: 0'dan 3'e kadar yazdırma:",
+                                code: `for i in range(4):\n    print(i)`,
+                                reason: "Bitiş sınırı dahil edilmediği için 5 yazdırmak adına 6 yazarız."
+                            },
+                            logic: [
+                                "1. for i in range(1, 6): yaz.",
+                                "2. İçine girintili print(i) ekle."
+                            ],
+                            hint: "range(1, 6) kullanmalısın.",
+                            solution: `for i in range(1, 6):\n    print(i)`
+                        }
+                    },
+                    {
+                        id: "m5_q2",
+                        stageLabel: "Aşama 2/5 • Artış Miktarı",
+                        title: "Çift Sayıları Artış Parametresiyle Yazdırma",
+                        fileName: "m5_gorev2.py",
+                        prompt: `<code>range(baslangic, bitis, artis)</code> yapısını kullanarak <strong>2'den 10'a kadar (10 dahil)</strong> çift sayıları alt alta yazdır (<code>2, 4, 6, 8, 10</code>).`,
+                        expectedOutput: "2\n4\n6\n8\n10",
+                        quickSummary: "<code>range(2, 11, 2)</code> 2'den başlayıp ikişer ikişer artar.",
+                        validate: (code, out) => code.includes("for") && out.trim().split(/\r?\n/).map(s=>s.trim()).join(",") === "2,4,6,8,10",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: 10'dan 30'a kadar 5'er sayma:",
+                                code: `for x in range(10, 31, 5):\n    print(x)`,
+                                reason: "Üçüncü parametre artış miktarını belirler."
+                            },
+                            logic: [
+                                "1. for s in range(2, 11, 2): yaz.",
+                                "2. Girintili print(s) ekle."
+                            ],
+                            hint: "10'un dahil olması için bitiş değerini 11 yap.",
+                            solution: `for s in range(2, 11, 2):\n    print(s)`
+                        }
+                    },
+                    {
+                        id: "m5_q3",
+                        stageLabel: "Aşama 3/5 • while Döngüsü",
+                        title: "while Döngüsü ile Roket Geri Sayımı",
+                        fileName: "m5_gorev3.py",
+                        prompt: `<code>while</code> döngüsü kullanarak <strong>3'ten 1'e kadar</strong> geri sayım yap (<code>3, 2, 1</code> alt alta) ve döngü bitince en alta <code>Atesle!</code> yazdır.`,
+                        expectedOutput: "3\n2\n1\nAtesle!",
+                        quickSummary: "<code>while</code> içinde sayaç değişkenini her turda <code>sayac -= 1</code> ile azaltmayı unutma.",
+                        validate: (code, out) => code.includes("while") && out.trim().split(/\r?\n/).map(s=>s.trim()).join(",") === "3,2,1,Atesle!",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: 4'ten 1'e geri sayım:",
+                                code: `n = 4\nwhile n >= 1:\n    print(n)\n    n -= 1\nprint("Bitti")`,
+                                reason: "print(\"Atesle!\") satırı girintisiz olmalı ki sadece döngü bittiğinde çalışsın."
+                            },
+                            logic: [
+                                "1. sayac = 3 tanımla.",
+                                "2. while sayac > 0: içine print(sayac) ve sayac -= 1 yaz.",
+                                "3. Döngü dışına print(\"Atesle!\") ekle."
+                            ],
+                            hint: "sayac -= 1 satırını unutursan sonsuz döngü oluşur.",
+                            solution: `sayac = 3\nwhile sayac > 0:\n    print(sayac)\n    sayac -= 1\nprint("Atesle!")`
+                        }
+                    },
+                    {
+                        id: "m5_q4",
+                        stageLabel: "Aşama 4/5 • break ve continue",
+                        title: "Döngüde Adım Atlama (continue) ve Durdurma (break)",
+                        fileName: "m5_gorev4.py",
+                        prompt: `1'den 10'a kadar dönen bir <code>for</code> döngüsünde:<br>
+                        • Sayı <strong>3</strong> ise <code>continue</code> ile yazdırmadan atla.<br>
+                        • Sayı <strong>6</strong> ise <code>break</code> ile döngüyü tamamen durdur.<br>
+                        Ekrana sırasıyla <code>1, 2, 4, 5</code> yazdır.`,
+                        expectedOutput: "1\n2\n4\n5",
+                        quickSummary: "<code>continue</code> sadece o turu pas geçer, <code>break</code> döngüyü kökten sonlandırır.",
+                        validate: (code, out) => code.includes("continue") && code.includes("break") && out.trim().split(/\r?\n/).map(s=>s.trim()).join(",") === "1,2,4,5",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: 2'yi atlayıp 4'te duran döngü:",
+                                code: `for i in range(1, 8):\n    if i == 2:\n        continue\n    if i == 4:\n        break\n    print(i)`,
+                                reason: "Kontroller print(i) satırından önce yazılmalıdır."
+                            },
+                            logic: [
+                                "1. for i in range(1, 11): kur.",
+                                "2. if i == 3: continue ve if i == 6: break ekle.",
+                                "3. En alta print(i) yaz."
+                            ],
+                            hint: "continue ve break komutlarının ikisini de kullanmalısın.",
+                            solution: `for i in range(1, 11):\n    if i == 3:\n        continue\n    if i == 6:\n        break\n    print(i)`
+                        }
+                    },
+                    {
+                        id: "m5_q5",
+                        stageLabel: "Aşama 5/5 • Modül Uygulaması",
+                        title: "Modül 5 Final: 1-20 Arası 3'e Bölünenlerin Toplamı",
+                        fileName: "m5_gorev5.py",
+                        prompt: `<code>toplam = 0</code> değişkeni oluştur. <strong>1'den 20'ye kadar (20 dahil)</strong> olan sayıları <code>for</code> döngüsüyle gez ve sadece <strong>3'e tam bölünen</strong> (<code>i % 3 == 0</code>) sayıların toplamını hesaplayıp ekrana (<code>63</code>) yazdır.`,
+                        expectedOutput: "63",
+                        quickSummary: "3 + 6 + 9 + 12 + 15 + 18 = 63 sonucunu bulmak için döngü içinde <code>if i % 3 == 0:</code> kontrolü yap.",
+                        validate: (code, out) => code.includes("for") && code.includes("%") && out.trim() === "63",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: 1-10 arası çift sayıların toplamı:",
+                                code: `toplam = 0\nfor i in range(1, 11):\n    if i % 2 == 0:\n        toplam += i\nprint(toplam)`,
+                                reason: "Hem döngüyü hem koşulu birleştirerek filtreli toplama yapıyoruz."
+                            },
+                            logic: [
+                                "1. toplam = 0 tanımla.",
+                                "2. for i in range(1, 21): içinde if i % 3 == 0: toplam += i",
+                                "3. Döngü dışında print(toplam) yaz."
+                            ],
+                            hint: "range(1, 21) kullanmayı unutma.",
+                            solution: `toplam = 0\nfor i in range(1, 21):\n    if i % 3 == 0:\n        toplam += i\nprint(toplam)`
+                        }
+                    }
+                ]
+            },
+
+            // ==================== MODÜL 6 (5 Soru) ====================
+            {
+                id: 6,
+                title: "Modül 6: Listeler ve Tuple/Demetler",
+                shortTitle: "Listeler & Tuple",
+                unlockedCommands: ["liste = []", ".append() / .remove()", "len() / sum() / max()", "demet = () (Tuple)"],
+                questions: [
+                    {
+                        id: "m6_q1",
+                        stageLabel: "Aşama 1/5 • Liste & İndeks",
+                        title: "Liste Oluşturma ve İlk/Son Elemana Erişim",
+                        fileName: "m6_gorev1.py",
+                        prompt: `<code>dersler = ["Matematik", "Fizik", "Kimya", "Biyoloji"]</code> listesini oluştur. İndeks kullanarak listenin <strong>ilk elemanını</strong> ve <strong>son elemanını</strong> (<code>-1</code>) alt alta yazdır.`,
+                        expectedOutput: "Matematik\nBiyoloji",
+                        quickSummary: "Listelerde ilk indeks <code>0</code>, son indeks <code>-1</code> ile çağrılır.",
+                        validate: (code, out) => code.includes("[") && out.trim().split(/\r?\n/).map(s=>s.trim()).join(",") === "Matematik,Biyoloji",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: Şehirler listesinden ilk ve son şehri yazdırma:",
+                                code: `sehirler = ["Izmir", "Bursa", "Antalya"]\nprint(sehirler[0])\nprint(sehirler[-1])`,
+                                reason: "Negatif indeksleme sondan geriye doğru sayar."
+                            },
+                            logic: [
+                                "1. dersler listesini tanımla.",
+                                "2. print(dersler[0]) ve print(dersler[-1]) yaz."
+                            ],
+                            hint: "dersler[0] ve dersler[-1] ifadelerini kullan.",
+                            solution: `dersler = ["Matematik", "Fizik", "Kimya", "Biyoloji"]\nprint(dersler[0])\nprint(dersler[-1])`
+                        }
+                    },
+                    {
+                        id: "m6_q2",
+                        stageLabel: "Aşama 2/5 • Liste Metotları",
+                        title: ".append() ile Eleman Ekleme ve len()",
+                        fileName: "m6_gorev2.py",
+                        prompt: `<code>sepet = ["Sut", "Ekmek"]</code> listesini tanımla. <code>.append()</code> ile listeye önce <code>"Peynir"</code>, sonra <code>"Zeytin"</code> ekle. Ardından <code>len(sepet)</code> ile toplam ürün sayısını (<code>4</code>) ekrana yazdır.`,
+                        expectedOutput: "4",
+                        quickSummary: "<code>liste.append(yeni)</code> listenin en sonuna yeni eleman ekler.",
+                        validate: (code, out) => code.includes(".append") && code.includes("len(") && out.trim() === "4",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: Listeye iki yeni isim ekleme:",
+                                code: `adlar = ["Can"]\nadlar.append("Ece")\nadlar.append("Mert")\nprint(len(adlar))`,
+                                reason: "Her append() çağrısı bir eleman ekler."
+                            },
+                            logic: [
+                                "1. sepet = [\"Sut\", \"Ekmek\"] oluştur.",
+                                "2. sepet.append(\"Peynir\") ve sepet.append(\"Zeytin\") yaz.",
+                                "3. print(len(sepet)) yazdır."
+                            ],
+                            hint: "len(sepet) fonksiyonunu kullan.",
+                            solution: `sepet = ["Sut", "Ekmek"]\nsepet.append("Peynir")\nsepet.append("Zeytin")\nprint(len(sepet))`
+                        }
+                    },
+                    {
+                        id: "m6_q3",
+                        stageLabel: "Aşama 3/5 • Tuple (Demet)",
+                        title: "Değiştirilemez Demet (Tuple) Kullanımı",
+                        fileName: "m6_gorev3.py",
+                        prompt: `Normal parantez <code>()</code> kullanarak <code>renkler = ("Kirmizi", "Yesil", "Mavi")</code> demetini (tuple) tanımla. İndeks kullanarak ortadaki elemanı (<code>Yesil</code>) ve <code>len()</code> ile eleman sayısını (<code>3</code>) alt alta yazdır.`,
+                        expectedOutput: "Yesil\n3",
+                        quickSummary: "Tuple (demet) verileri değiştirilemeyen güvenli listelerdir ve <code>()</code> ile tanımlanır.",
+                        validate: (code, out) => code.includes("(") && out.trim().split(/\r?\n/).map(s=>s.trim()).join(",") === "Yesil,3",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: Yönler demetinden 2. elemanı yazdırma:",
+                                code: `yonler = ("Kuzey", "Guney", "Dogu")\nprint(yonler[1])\nprint(len(yonler))`,
+                                reason: "Demetlerde indeksleme ve len() tıpkı listeler gibi çalışır."
+                            },
+                            logic: [
+                                "1. renkler = (\"Kirmizi\", \"Yesil\", \"Mavi\") tanımla.",
+                                "2. print(renkler[1]) ve print(len(renkler)) yaz."
+                            ],
+                            hint: "Köşeli parantez yerine normal parantez () ile demet tanımla.",
+                            solution: `renkler = ("Kirmizi", "Yesil", "Mavi")\nprint(renkler[1])\nprint(len(renkler))`
+                        }
+                    },
+                    {
+                        id: "m6_q4",
+                        stageLabel: "Aşama 4/5 • Döngü + Liste",
+                        title: "Listedeki Sayıları Filtreleme (for + if)",
+                        fileName: "m6_gorev4.py",
+                        prompt: `<code>sicakliklar = [18, 26, 31, 14, 29]</code> listesini <code>for</code> döngüsüyle gez ve sadece <strong>25 dereceden yüksek</strong> olan sıcaklıkları alt alta ekrana yazdır (<code>26, 31, 29</code>).`,
+                        expectedOutput: "26\n31\n29",
+                        quickSummary: "<code>for s in sicakliklar:</code> döngüsü listedeki her değeri sırayla <code>s</code> değişkenine aktarır.",
+                        validate: (code, out) => code.includes("for") && code.includes("if") && out.trim().split(/\r?\n/).map(s=>s.trim()).join(",") === "26,31,29",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: 50'den büyük puanları yazdırma:",
+                                code: `p = [40, 65, 80]\nfor x in p:\n    if x > 50:\n        print(x)`,
+                                reason: "Döngü içinde if koşulu kurarak istediğimiz elemanları seçiyoruz."
+                            },
+                            logic: [
+                                "1. sicakliklar listesini tanımla.",
+                                "2. for s in sicakliklar: içinde if s > 25: print(s)"
+                            ],
+                            hint: "s > 25 koşulunu kullan.",
+                            solution: `sicakliklar = [18, 26, 31, 14, 29]\nfor s in sicakliklar:\n    if s > 25:\n        print(s)`
+                        }
+                    },
+                    {
+                        id: "m6_q5",
+                        stageLabel: "Aşama 5/5 • Modül Uygulaması",
+                        title: "Modül 6 Final: Sınav İstatistik Analizi",
+                        fileName: "m6_gorev5.py",
+                        prompt: `<code>puanlar = [55, 75, 95, 95]</code> listesini tanımla. <code>sum()</code>, <code>len()</code> ve <code>max()</code> fonksiyonlarını kullanarak ekrana alt alta şu iki satırı yazdır:<br>
+                        <code>Ortalama: 80.0</code><br>
+                        <code>En Yuksek: 95</code>`,
+                        expectedOutput: "Ortalama: 80.0\nEn Yuksek: 95",
+                        quickSummary: "Ortalama formülü: <code>sum(puanlar) / len(puanlar)</code>. En büyük değer: <code>max(puanlar)</code>.",
+                        validate: (code, out) => code.includes("sum(") && code.includes("max(") && out.trim().split(/\r?\n/).map(s=>s.trim()).join("|") === "Ortalama: 80.0|En Yuksek: 95",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: Liste ortalaması ve en büyüğü:",
+                                code: `d = [10, 20, 30]\nprint(f"Ortalama: {sum(d)/len(d)}")\nprint(f"En Yuksek: {max(d)}")`,
+                                reason: "Hazır liste fonksiyonları kısa ve hatasız analiz sağlar."
+                            },
+                            logic: [
+                                "1. puanlar listesini oluştur.",
+                                "2. ort = sum(puanlar) / len(puanlar)",
+                                "3. f-string ile Ortalama ve En Yuksek satırlarını yazdır."
+                            ],
+                            hint: "sum() ve max() fonksiyonlarını kullan.",
+                            solution: `puanlar = [55, 75, 95, 95]\nort = sum(puanlar) / len(puanlar)\nprint(f"Ortalama: {ort}")\nprint(f"En Yuksek: {max(puanlar)}")`
+                        }
+                    }
+                ]
+            },
+
+            // ==================== MODÜL 7 (5 Soru) ====================
+            {
+                id: 7,
+                title: "Modül 7: Sözlükler (Dict) ve Kümeler (Set)",
+                shortTitle: "Sözlükler (Dict) & Kümeler (Set)",
+                unlockedCommands: ["sozluk = {'k': 'v'}", ".items() / .keys() / .values()", "kume = set()", "Kesişim (&) ve Birleşim (|)"],
+                questions: [
+                    {
+                        id: "m7_q1",
+                        stageLabel: "Aşama 1/5 • Sözlük Oluşturma",
+                        title: "Sözlük (Dictionary) Tanımlama ve Değer Okuma",
+                        fileName: "m7_gorev1.py",
+                        prompt: `<code>ogrenci</code> adında bir sözlük oluştur: <code>"ad": "Deniz"</code> ve <code>"numara": 105</code>. Anahtar adlarını kullanarak ekrana alt alta <code>Deniz</code> ve <code>105</code> yazdır.`,
+                        expectedOutput: "Deniz\n105",
+                        quickSummary: "Sözlüklerde verilere <code>sozluk[\"anahtar\"]</code> şeklinde ulaşılır.",
+                        validate: (code, out) => code.includes("{") && code.includes("}") && out.trim().split(/\r?\n/).map(s=>s.trim()).join(",") === "Deniz,105",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: Kitap sözlüğünden ad ve yazar okuma:",
+                                code: `kitap = {"ad": "Nutuk", "yil": 1927}\nprint(kitap["ad"])\nprint(kitap["yil"])`,
+                                reason: "Anahtar isimleri tırnak içinde yazılmalıdır."
+                            },
+                            logic: [
+                                "1. ogrenci = {\"ad\": \"Deniz\", \"numara\": 105} tanımla.",
+                                "2. print(ogrenci[\"ad\"]) ve print(ogrenci[\"numara\"]) yaz."
+                            ],
+                            hint: "Süslü parantez {} kullanarak sözlüğü oluştur.",
+                            solution: `ogrenci = {"ad": "Deniz", "numara": 105}\nprint(ogrenci["ad"])\nprint(ogrenci["numara"])`
+                        }
+                    },
+                    {
+                        id: "m7_q2",
+                        stageLabel: "Aşama 2/5 • Sözlük Güncelleme",
+                        title: "Sözlüğe Yeni Alan Ekleme ve Değer Toplama",
+                        fileName: "m7_gorev2.py",
+                        prompt: `<code>cuzdan = {"nakit": 120, "kart": 300}</code> sözlüğünü tanımla. Sözlüğe <code>"bozukluk": 30</code> anahtarını ekle ve <code>sum(cuzdan.values())</code> ile toplam parayı (<code>450</code>) ekrana yazdır.`,
+                        expectedOutput: "450",
+                        quickSummary: "<code>sozluk[\"yeni\"] = deger</code> sözlüğe yeni çift ekler; <code>.values()</code> tüm değerleri verir.",
+                        validate: (code, out) => code.includes(".values()") && out.trim() === "450",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: Stok sözlüğüne ürün ekleyip toplama:",
+                                code: `stok = {"a": 10, "b": 20}\nstok["c"] = 5\nprint(sum(stok.values()))`,
+                                reason: "cuzdan.values() sayısal değerleri döndürdüğü için sum() ile toplanabilir."
+                            },
+                            logic: [
+                                "1. cuzdan sözlüğünü tanımla.",
+                                "2. cuzdan[\"bozukluk\"] = 30 ekle.",
+                                "3. print(sum(cuzdan.values())) yazdır."
+                            ],
+                            hint: ".values() metodunu kullanmayı unutma.",
+                            solution: `cuzdan = {"nakit": 120, "kart": 300}\ncuzdan["bozukluk"] = 30\nprint(sum(cuzdan.values()))`
+                        }
+                    },
+                    {
+                        id: "m7_q3",
+                        stageLabel: "Aşama 3/5 • Kümeler (Set)",
+                        title: "Küme (Set) ile Tekrar Eden Verileri Temizleme",
+                        fileName: "m7_gorev3.py",
+                        prompt: `<code>katilimcilar = ["Ali", "Veli", "Ali", "Ayse", "Veli"]</code> listesini <code>set()</code> fonksiyonuyla kümeye çevirerek tekrar eden isimleri temizle ve benzersiz kişi sayısını (<code>3</code>) ekrana yazdır.`,
+                        expectedOutput: "3",
+                        quickSummary: "Kümeler (<code>set</code>) aynı elemandan yalnızca bir tane barındırır.",
+                        validate: (code, out) => code.includes("set(") && out.trim() === "3",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: Listedeki farklı sayı adedini bulma:",
+                                code: `nums = [5, 5, 8, 8, 9]\ntekils = set(nums)\nprint(len(tekils))  # 3`,
+                                reason: "set() tekrar eden öğeleri otomatik olarak eler."
+                            },
+                            logic: [
+                                "1. katilimcilar listesini tanımla.",
+                                "2. benzersiz = set(katilimcilar)",
+                                "3. print(len(benzersiz)) yazdır."
+                            ],
+                            hint: "len(set(katilimcilar)) yapısını kullan.",
+                            solution: `katilimcilar = ["Ali", "Veli", "Ali", "Ayse", "Veli"]\nbenzersiz = set(katilimcilar)\nprint(len(benzersiz))`
+                        }
+                    },
+                    {
+                        id: "m7_q4",
+                        stageLabel: "Aşama 4/5 • Küme Kesişimi",
+                        title: "İki Kümenin Ortak Elemanlarını Bulma (&)",
+                        fileName: "m7_gorev4.py",
+                        prompt: `<code>python_kulup = {"Arda", "Buse", "Cem"}</code> ve <code>robotik_kulup = {"Buse", "Cem", "Derya"}</code> kümelerini oluştur. Kesişim operatörü (<code>&</code>) kullanarak her iki kulüpte de yer alan ortak öğrenci sayısını (<code>2</code>) ekrana yazdır.`,
+                        expectedOutput: "2",
+                        quickSummary: "İki kümenin ortak elemanları <code>kume1 & kume2</code> ile bulunur.",
+                        validate: (code, out) => code.includes("&") && out.trim() === "2",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: İki kümenin kesişim eleman sayısı:",
+                                code: `a = {1, 2, 3}\nb = {2, 3, 4}\nortak = a & b\nprint(len(ortak))`,
+                                reason: "& operatörü her iki kümede de bulunan elemanlardan yeni bir küme oluşturur."
+                            },
+                            logic: [
+                                "1. İki kümeyi süslü parantezle tanımla.",
+                                "2. ortak = python_kulup & robotik_kulup",
+                                "3. print(len(ortak)) yazdır."
+                            ],
+                            hint: "& kesişim operatörünü kullan.",
+                            solution: `python_kulup = {"Arda", "Buse", "Cem"}\nrobotik_kulup = {"Buse", "Cem", "Derya"}\nortak = python_kulup & robotik_kulup\nprint(len(ortak))`
+                        }
+                    },
+                    {
+                        id: "m7_q5",
+                        stageLabel: "Aşama 5/5 • Modül Uygulaması",
+                        title: "Modül 7 Final: Menü Fiyat Listesi Raporu (.items)",
+                        fileName: "m7_gorev5.py",
+                        prompt: `<code>menu = {"Cay": 15, "Kahve": 45, "Tost": 70}</code> sözlüğünü <code>.items()</code> ve <code>for</code> döngüsüyle gezerek her ürünü alt alta şu formatta yazdır:<br>
+                        <code>Cay -> 15 TL</code><br>
+                        <code>Kahve -> 45 TL</code><br>
+                        <code>Tost -> 70 TL</code>`,
+                        expectedOutput: "Cay -> 15 TL\nKahve -> 45 TL\nTost -> 70 TL",
+                        quickSummary: "<code>for urun, fiyat in menu.items():</code> her turda anahtar ve değeri birlikte verir.",
+                        validate: (code, out) => code.includes(".items()") && out.trim().split(/\r?\n/).map(s=>s.trim()).join("|") === "Cay -> 15 TL|Kahve -> 45 TL|Tost -> 70 TL",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: Sözlük öğelerini döngüyle biçimlendirme:",
+                                code: `s = {"Elma": 20, "Armut": 30}\nfor k, v in s.items():\n    print(f"{k} -> {v} TL")`,
+                                reason: ".items() ikili çiftler döndürür."
+                            },
+                            logic: [
+                                "1. menu sözlüğünü oluştur.",
+                                "2. for urun, fiyat in menu.items():",
+                                "3. print(f\"{urun} -> {fiyat} TL\")"
+                            ],
+                            hint: "Ok işareti '->' ve boşluklara dikkat et.",
+                            solution: `menu = {"Cay": 15, "Kahve": 45, "Tost": 70}\nfor urun, fiyat in menu.items():\n    print(f"{urun} -> {fiyat} TL")`
+                        }
+                    }
+                ]
+            },
+
+            // ==================== MODÜL 8 (5 Soru) ====================
+            {
+                id: 8,
+                title: "Modül 8: Fonksiyonlar (def) ve Hata Yakalama",
+                shortTitle: "Fonksiyonlar & try-except",
+                unlockedCommands: ["def fonksiyon():", "return deger", "Varsayılan Parametre", "try: / except Hata:"],
+                questions: [
+                    {
+                        id: "m8_q1",
+                        stageLabel: "Aşama 1/5 • İlk Fonksiyon",
+                        title: "Parametreli Fonksiyon Tanımlama ve Çağırma",
+                        fileName: "m8_gorev1.py",
+                        prompt: `<code>mesaj_ver(isim)</code> adında bir fonksiyon tanımla. Çağrıldığında ekrana <code>Iyi calismalar {isim}!</code> yazdırsın. Ardından fonksiyonu <code>"Mert"</code> ile çağır.`,
+                        expectedOutput: "Iyi calismalar Mert!",
+                        quickSummary: "Fonksiyon <code>def</code> ile tanımlanır, tanımlandıktan sonra adı yazılarak çağrılır.",
+                        validate: (code, out) => code.includes("def mesaj_ver") && out.trim() === "Iyi calismalar Mert!",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: Selamlama fonksiyonu:",
+                                code: `def selam(ad):\n    print(f"Merhaba {ad}!")\n\nselam("Ece")`,
+                                reason: "Fonksiyonu çağırmazsan kod çalışmaz."
+                            },
+                            logic: [
+                                "1. def mesaj_ver(isim): yaz.",
+                                "2. İçine print(f\"Iyi calismalar {isim}!\") ekle.",
+                                "3. Dışarıda mesaj_ver(\"Mert\") çağır."
+                            ],
+                            hint: "Fonksiyon adını tam olarak mesaj_ver yap.",
+                            solution: `def mesaj_ver(isim):\n    print(f"Iyi calismalar {isim}!")\n\nmesaj_ver("Mert")`
+                        }
+                    },
+                    {
+                        id: "m8_q2",
+                        stageLabel: "Aşama 2/5 • return",
+                        title: "Değer Döndüren Fonksiyon (return)",
+                        fileName: "m8_gorev2.py",
+                        prompt: `İki sayı alan ve çarpımlarını <code>return</code> ile döndüren <code>carpma(a, b)</code> fonksiyonunu yaz. Ardından <code>print(carpma(7, 8))</code> ile ekrana <code>56</code> yazdır.`,
+                        expectedOutput: "56",
+                        quickSummary: "<code>return</code> sonucu çağrıldığı yere geri gönderir; böylece başka işlemlerde kullanabiliriz.",
+                        validate: (code, out) => code.includes("def carpma") && code.includes("return") && out.trim() === "56",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: İki sayıyı toplayıp döndüren fonksiyon:",
+                                code: `def topla(x, y):\n    return x + y\n\nprint(topla(10, 15))`,
+                                reason: "Fonksiyon içinde print yerine return kullanıyoruz."
+                            },
+                            logic: [
+                                "1. def carpma(a, b): return a * b",
+                                "2. print(carpma(7, 8))"
+                            ],
+                            hint: "return komutunu mutlaka kullanmalısın.",
+                            solution: `def carpma(a, b):\n    return a * b\n\nprint(carpma(7, 8))`
+                        }
+                    },
+                    {
+                        id: "m8_q3",
+                        stageLabel: "Aşama 3/5 • Varsayılan Parametre",
+                        title: "Varsayılan Parametreli KDV Hesaplama",
+                        fileName: "m8_gorev3.py",
+                        prompt: `<code>kdvli_fiyat(tutar, oran=20)</code> fonksiyonunu tanımla (<code>return tutar + (tutar * oran / 100)</code>). Önce <code>print(kdvli_fiyat(100))</code> (<code>120.0</code>), sonra <code>print(kdvli_fiyat(100, 10))</code> (<code>110.0</code>) sonuçlarını alt alta yazdır.`,
+                        expectedOutput: "120.0\n110.0",
+                        quickSummary: "<code>oran=20</code> yazıldığında ikinci değer girilmezse otomatik 20 kullanılır.",
+                        validate: (code, out) => code.includes("def kdvli_fiyat") && code.includes("return") && out.trim().split(/\r?\n/).map(s=>s.trim()).join(",") === "120.0,110.0",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: Varsayılan artış fonksiyonu:",
+                                code: `def artir(sayi, miktar=5):\n    return sayi + miktar\nprint(artir(10))\nprint(artir(10, 2))`,
+                                reason: "Varsayılan parametre fonksiyon çağrısını esnekleştirir."
+                            },
+                            logic: [
+                                "1. def kdvli_fiyat(tutar, oran=20):",
+                                "2. return tutar + (tutar * oran / 100)",
+                                "3. İki farklı çağrıyı alt alta print() et."
+                            ],
+                            hint: "oran=20 varsayılan değerini fonksiyon başlığına yaz.",
+                            solution: `def kdvli_fiyat(tutar, oran=20):\n    return tutar + (tutar * oran / 100)\n\nprint(kdvli_fiyat(100))\nprint(kdvli_fiyat(100, 10))`
+                        }
+                    },
+                    {
+                        id: "m8_q4",
+                        stageLabel: "Aşama 4/5 • try - except",
+                        title: "Hata Yakalama ile Güvenli Sayı Dönüşümü",
+                        fileName: "m8_gorev4.py",
+                        prompt: `<code>sayiya_cevir(metin)</code> fonksiyonunu yaz. İçinde <code>try - except ValueError:</code> kullanarak <code>int(metin)</code> değerini <code>return</code> et; eğer çevrilemiyorsa program çökmeden <code>"Gecersiz Sayi"</code> döndürsün.<br>
+                        Alt alta <code>print(sayiya_cevir("42"))</code> (<code>42</code>) ve <code>print(sayiya_cevir("abc"))</code> (<code>Gecersiz Sayi</code>) çalıştır.`,
+                        expectedOutput: "42\nGecersiz Sayi",
+                        quickSummary: "<code>try:</code> içindeki kod hata verirse akış <code>except:</code> bloğuna atlar.",
+                        validate: (code, out) => code.includes("try:") && code.includes("except") && out.trim().split(/\r?\n/).map(s=>s.trim()).join(",") === "42,Gecersiz Sayi",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: Hatalı dönüşümü yakalama:",
+                                code: `try:\n    print(int("merhaba"))\nexcept ValueError:\n    print("Hatali giris")`,
+                                reason: "Harfler int() ile sayıya çevrilirken ValueError hatası oluşur."
+                            },
+                            logic: [
+                                "1. def sayiya_cevir(metin):",
+                                "2. try: return int(metin)",
+                                "3. except ValueError: return \"Gecersiz Sayi\""
+                            ],
+                            hint: "try ve except bloklarını girintili yaz.",
+                            solution: `def sayiya_cevir(metin):\n    try:\n        return int(metin)\n    except ValueError:\n        return "Gecersiz Sayi"\n\nprint(sayiya_cevir("42"))\nprint(sayiya_cevir("abc"))`
+                        }
+                    },
+                    {
+                        id: "m8_q5",
+                        stageLabel: "Aşama 5/5 • Final Görevi",
+                        title: "Modül 8 Final: Güvenli Hesap Makinesi Fonksiyonu",
+                        fileName: "m8_gorev5.py",
+                        prompt: `<code>guvenli_bol(a, b)</code> fonksiyonunu oluştur. <code>try - except ZeroDivisionError:</code> kullanarak <code>a / b</code> sonucunu döndür; sıfıra bölme durumunda <code>"Sifira Bolunemez"</code> döndürsün.<br>
+                        Alt alta <code>print(guvenli_bol(30, 5))</code> (<code>6.0</code>) ve <code>print(guvenli_bol(12, 0))</code> (<code>Sifira Bolunemez</code>) yazdır.`,
+                        expectedOutput: "6.0\nSifira Bolunemez",
+                        quickSummary: "Tebrikler! Tüm 8 modülün son görevini tamamlayarak fonksiyon ve hata yönetimi becerini birleştiriyorsun.",
+                        validate: (code, out) => code.includes("def guvenli_bol") && code.includes("try:") && code.includes("except") && out.trim().split(/\r?\n/).map(s=>s.trim()).join(",") === "6.0,Sifira Bolunemez",
+                        guidance: {
+                            similar: {
+                                question: "Benzer Örnek: ZeroDivisionError yakalama:",
+                                code: `def bol(x, y):\n    try:\n        return x / y\n    except ZeroDivisionError:\n        return "Hata"`,
+                                reason: "except bloğu sayesinde program kesintisiz çalışmaya devam eder."
+                            },
+                            logic: [
+                                "1. def guvenli_bol(a, b):",
+                                "2. try: return a / b",
+                                "3. except ZeroDivisionError: return \"Sifira Bolunemez\"",
+                                "4. İki test çağrısını print() ile yazdır."
+                            ],
+                            hint: "Sıfıra bölme hatası için ZeroDivisionError yakala.",
+                            solution: `def guvenli_bol(a, b):\n    try:\n        return a / b\n    except ZeroDivisionError:\n        return "Sifira Bolunemez"\n\nprint(guvenli_bol(30, 5))\nprint(guvenli_bol(12, 0))`
+                        }
+                    }
+                ]
+            }
+        ];
+
+        /* ============================================================================
+           3. KAPSAMLI PROJE GÖREVLERİ (40-50 SATIRLIK UYGULAMA ATÖLYESİ)
+           ============================================================================ */
+        const CAPSTONE_PROJECTS = [
+            {
+                id: "cap_1",
+                title: "1. Öğrenci Not & Karne Yönetim Sistemi",
+                badge: "Değişken + Liste + Sözlük + Döngü + def",
+                fileName: "ogrenci_karne_sistemi.py",
+                desc: "Öğretmenlerin sınıf öğrencilerini ekleyebildiği, vize-final notlarından ortalama hesaplayıp Geçti/Kaldı durumunu çıkaran, sınıf ortalamasını ve en başarılı öğrenciyi raporlayan ~45 satırlık tam kapsamlı bir konsol uygulaması yaz.",
+                requirements: [
+                    "Öğrencileri tutacak boş bir liste (<code>ogrenciler = []</code>) ve menü döngüsü (<code>while True</code>) kur.",
+                    "<strong>1 - Öğrenci Ekle:</strong> Ad, vize ve final notunu <code>input()</code> ile al; <code>ortalama_hesapla(v, f)</code> fonksiyonu ile ortalamayı (%40 vize + %60 final) hesapla ve sözlük olarak listeye ekle.",
+                    "<strong>2 - Karne Listesi:</strong> Tüm öğrencileri döngüyle gezerek ad, ortalama ve Geçti (>=50) / Kaldı durumunu tablo halinde yazdır.",
+                    "<strong>3 - Sınıf İstatistiği:</strong> Sınıfın genel not ortalamasını ve en yüksek ortalamaya sahip öğrenciyi bulup göster.",
+                    "<strong>4 - Çıkış:</strong> <code>break</code> ile programı sonlandır."
+                ],
+                plan: `<strong>Önerilen Mimari Plan (~45 Satır):</strong>
+1. <code>def ortalama_hesapla(vize, final):</code> fonksiyonunu yaz (<code>return vize * 0.4 + final * 0.6</code>).
+2. <code>def durum_bul(ort):</code> fonksiyonuyla 50 ve üzeri için "Geçti", altı için "Kaldı" döndür.
+3. <code>ogrenciler = []</code> listesi oluştur ve <code>while True:</code> içinde 1-Ekle, 2-Listele, 3-İstatistik, 4-Çıkış menüsünü yaz.
+4. Ekleme kısmında <code>{"ad": ad, "ort": ort, "durum": durum}</code> sözlüğünü <code>ogrenciler.append(...)</code> ile kaydet.`
+            },
+            {
+                id: "cap_2",
+                title: "2. Mini Market Kasa & Fiş Otomasyonu",
+                badge: "Sözlük + while + if-elif + f-string",
+                fileName: "market_kasa_otomasyonu.py",
+                desc: "Ürün kataloğu bir sözlükte tutulan, müşterinin sepetine ürün ve adet ekleyebildiği, 500 TL üzeri alışverişte %15 indirim uygulayan ve sonunda düzenli bir kasa fişi kesen ~45 satırlık market programı kodla.",
+                requirements: [
+                    "En az 5 üründen oluşan bir fiyat sözlüğü tanımla (örn: <code>urunler = {\"ekmek\": 10, \"sut\": 32, \"peynir\": 110, \"yumurta\": 85, \"cay\": 140}</code>).",
+                    "Müşterinin aldığı ürünleri tutacak <code>sepet = []</code> listesi ve alışveriş döngüsü (<code>while True</code>) oluştur.",
+                    "Kullanıcı ürün adı ve adet girdiğinde ürün katalogda varsa (<code>if urun in urunler:</code>) tutarı hesaplayıp sepete ekle; yoksa uyarı ver.",
+                    "<strong>Fiş Kes:</strong> Alışveriş bitince tüm kalemleri, ara toplamı, varsa %15 indirimi ve ödenecek net tutarı düzenli bir fiş formatında yazdır."
+                ],
+                plan: `<strong>Önerilen Mimari Plan (~45 Satır):</strong>
+1. Ürün fiyatlarını tutan <code>urunler</code> sözlüğünü ve <code>sepet = []</code> listesini tanımla.
+2. <code>def fis_yazdir(sepet_listesi):</code> fonksiyonu yaz; ara toplamı bulsun, 500 TL üstüyse %15 indirim düşsün.
+3. <code>while True:</code> döngüsünde ürün adını al (<code>.lower()</code> ile küçük harfe çevir), 'cikis' yazarsa döngüyü kır ve fişi yazdır.`
+            },
+            {
+                id: "cap_3",
+                title: "3. Banka ATM & Hesap Hareketleri Simülasyonu",
+                badge: "PIN Güvenliği + try-except + Liste Geçmişi",
+                fileName: "banka_atm_simulasyonu.py",
+                desc: "3 haklı şifre doğrulaması olan, bakiye sorgulama, para yatırma, bakiye kontrolü yaparak para çekme ve tüm işlemlerin geçmişini (dekont listesi) saklayan ~45 satırlık güvenli bir ATM uygulaması geliştir.",
+                requirements: [
+                    "Başlangıç bakiyesi (<code>bakiye = 2500</code>), doğru PIN (<code>\"1923\"</code>) ve <code>gecmis = []</code> listesi tanımla.",
+                    "Kullanıcıya <strong>3 giriş hakkı</strong> tanıyan PIN kontrol döngüsü yaz; 3 kez yanlış girerse kartı bloke edip programı bitir.",
+                    "Giriş başarılıysa ana menüde: <strong>1-Bakiye, 2-Para Yatır, 3-Para Çek, 4-Hesap Geçmişi, 5-Çıkış</strong> seçeneklerini sun.",
+                    "Para çekerken bakiyeden fazla tutar girilirse uyar; başarılı her işlemi <code>gecmis.append(...)</code> ile kaydet ve <code>try-except</code> ile hatalı girişleri engelle."
+                ],
+                plan: `<strong>Önerilen Mimari Plan (~45 Satır):</strong>
+1. <code>hak = 3</code> ile başlayan bir PIN doğrulama döngüsü kur.
+2. Doğru girilirse ana menü döngüsüne geç.
+3. Para yatırma ve çekme işlemlerini ayrı fonksiyonlar (<code>def para_cek(bakiye, tutar):</code>) olarak tasarla ve her hareketi <code>gecmis</code> listesine ekle.`
+            },
+            {
+                id: "cap_4",
+                title: "4. Kişisel Görev & Ajanda Takip Uygulaması",
+                badge: "Liste İndeksleme + Fonksiyonlar + Durum Takibi",
+                fileName: "ajanda_gorev_takip.py",
+                desc: "Günlük yapılacak işleri ekleyebildiğin, numaralandırarak listeleyebildiğin, tamamlanan görevleri işaretleyebildiğin, görev silebildiğin ve tamamlanma yüzdesini gösteren ~45 satırlık ajanda uygulaması yaz.",
+                requirements: [
+                    "Görevleri <code>{\"baslik\": ..., \"tamamlandi\": False}</code> formatında tutan <code>gorevler = []</code> listesi oluştur.",
+                    "<strong>1 - Görev Ekle:</strong> Yeni görev başlığını alıp listeye ekle.",
+                    "<strong>2 - Görevleri Listele:</strong> <code>enumerate()</code> veya <code>range(len(gorevler))</code> ile görevleri <code>1. [ ] Ders çalış</code> / <code>2. [✓] Kod yaz</code> şeklinde göster.",
+                    "<strong>3 - Tamamlandı İşaretle & 4 - Görev Sil:</strong> Numara seçtirerek görevi güncelle veya <code>.pop()</code> ile sil.",
+                    "<strong>5 - Özet Rapor:</strong> Toplam görev, tamamlanan ve kalan görev sayısını hesapla."
+                ],
+                plan: `<strong>Önerilen Mimari Plan (~45 Satır):</strong>
+1. <code>def listele(gorev_listesi):</code> fonksiyonu ile görevleri 1'den başlayan numaralarla ekrana yazdır.
+2. Menüde kullanıcıdan seçim al ve numaraya göre <code>gorevler[no - 1]["tamamlandi"] = True</code> güncellemesi yap.
+3. Silme işleminde <code>gorevler.pop(no - 1)</code> metodunu <code>try-except</code> içinde güvenle kullan.`
+            }
+        ];
+
+        /* ============================================================================
+           4. SARI KOMUT SÖZLÜĞÜ VERİLERİ
+           ============================================================================ */
+        const DICTIONARY_DATA = [
+            { cmd: "print(..., sep, end)", mod: "Modül 1", modId: 1, desc: "Ekrana çıktı verir. sep değerler arasına konulacak karakteri, end satır sonu karakterini belirler.", ex: 'print("22", "11", "2026", sep="-")' },
+            { cmd: "# Yorum Satırı & \\n", mod: "Modül 1", modId: 1, desc: "# açıklama satırı ekler; \\n metin içinde alt satıra geçmeyi sağlar.", ex: 'print("Satir 1\\nSatir 2")' },
+            { cmd: "type() & int() / float()", mod: "Modül 2", modId: 2, desc: "type() veri tipini gösterir; int() tam sayıya, float() ondalıklı sayıya dönüştürür.", ex: 'sayi = int("45") + 5' },
+            { cmd: 'f"..." (f-string)', mod: "Modül 2", modId: 2, desc: "Metin içerisine {degisken} yazarak temiz biçimlendirme sağlar.", ex: 'print(f"Puan: {puan}")' },
+            { cmd: "input()", mod: "Modül 3", modId: 3, desc: "Kullanıcıdan veri alır. Sayısal işlem için int(input(...)) şeklinde dönüştürülür.", ex: 'yas = int(input("Yaş: "))' },
+            { cmd: "// , % , ** , and / or", mod: "Modül 3", modId: 3, desc: "// tam bölme, % mod (kalan), ** üs alma; and/or mantıksal bağlaçlardır.", ex: '195 // 60  # 3 | 195 % 60  # 15' },
+            { cmd: "if / elif / else", mod: "Modül 4", modId: 4, desc: "Koşullu dallanma sağlar. İki nokta (:) ve 4 boşluk girinti zorunludur.", ex: 'if x > 0:\n    print("Pozitif")' },
+            { cmd: "for ... in range()", mod: "Modül 5", modId: 5, desc: "Belirli aralıkta döngü kurar. Bitiş değeri dahil değildir.", ex: 'for i in range(1, 6):' },
+            { cmd: "while / break / continue", mod: "Modül 5", modId: 5, desc: "Koşul doğruyken döner. break döngüyü bitirir, continue o turu atlar.", ex: 'while n > 0:\n    n -= 1' },
+            { cmd: "list & tuple () / []", mod: "Modül 6", modId: 6, desc: "Listeler ([]) değiştirilebilir, demetler (()) değiştirilemez koleksiyonlardır.", ex: 'liste.append("Yeni")' },
+            { cmd: "sum() / max() / len()", mod: "Modül 6", modId: 6, desc: "Koleksiyonların toplamını, en büyüğünü ve eleman sayısını bulur.", ex: 'ort = sum(notlar) / len(notlar)' },
+            { cmd: "dict {} & .items()", mod: "Modül 7", modId: 7, desc: "Anahtar-değer sözlüklerinde çiftleri gezmeyi sağlar.", ex: 'for k, v in sozluk.items():' },
+            { cmd: "set() & Kesişim (&)", mod: "Modül 7", modId: 7, desc: "Benzersiz elemanlı kümeler oluşturur; & ile ortak elemanlar bulunur.", ex: 'ortak = kume1 & kume2' },
+            { cmd: "def & return", mod: "Modül 8", modId: 8, desc: "Yeni fonksiyon tanımlar ve çağrıldığı yere değer geri döndürür.", ex: 'def kare(x):\n    return x ** 2' },
+            { cmd: "try / except", mod: "Modül 8", modId: 8, desc: "Çalışma zamanı hatalarını yakalayarak programın çökmesini önler.", ex: 'try:\n    x = int(metin)\nexcept ValueError:\n    print("Hata!")' }
+        ];
+
+        /* ============================================================================
+           5. UYGULAMA DURUMU (STATE) & KALICI KAYIT (localStorage)
+           ============================================================================ */
+        const STORAGE_KEY = "python_studio_pro_v3_40q";
+        const ALL_QUESTIONS = CURRICULUM.flatMap(m => m.questions.map((q, idxInMod) => ({
+            ...q,
+            moduleId: m.id,
+            moduleTitle: m.title,
+            indexInModule: idxInMod
+        })));
+
+        let appState = {
+            currentQuestionIndex: 0,
+            completedIds: [],
+            celebratedModules: [], // Tamamlanıp sarı kutucuk uyarısı verilen modüller
+            savedCodes: {},
+            capstoneCodes: {},
+            activeCapstoneId: "cap_1",
+            editorFontSize: 14
+        };
+
+        let isYellowBoxFlashing = false;
+        let highlightedModuleInDict = null;
+
+        function loadSavedState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    appState = { ...appState, ...parsed };
+                }
+            } catch (e) {
+                console.warn("Kayıt okunamadı:", e);
+            }
+        }
+
+        let saveTimeout = null;
+        function triggerAutoSave() {
+            const statusText = document.getElementById('saveStatusText');
+            statusText.textContent = "Kaydediliyor...";
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                persistStateNow();
+                statusText.textContent = "Otomatik Kayıt";
+            }, 350);
+        }
+
+        function persistStateNow() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+            } catch (e) {
+                console.error("Kayıt hatası:", e);
+            }
+        }
+
+        function manualSaveAndToast() {
+            const curQ = ALL_QUESTIONS[appState.currentQuestionIndex];
+            if (curQ) {
+                appState.savedCodes[curQ.id] = document.getElementById('lessonEditor').value;
+            }
+            appState.capstoneCodes[appState.activeCapstoneId] = document.getElementById('capstoneEditor').value;
+            persistStateNow();
+            document.getElementById('saveStatusText').textContent = "Kaydedildi ✓";
+            showToast("Tüm kodların ve 40 görevlik ilerlemen kaydedildi!");
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toastNotification');
+            document.getElementById('toastMessage').textContent = msg;
+            toast.classList.remove('hidden');
+            toast.classList.add('flex');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+                toast.classList.remove('flex');
+            }, 3200);
+        }
+
+        /* ============================================================================
+           6. SOL ÜST SARI KOMUT SÖZLÜĞÜ KUTUCUĞU YANIP SÖNME KONTROLÜ
+           ============================================================================ */
+        function triggerYellowBoxFlash(badgeText = "Yeni Aşama!", moduleIdToHighlight = null) {
+            const box = document.getElementById('yellowDictBox');
+            const badge = document.getElementById('yellowBoxAlertBadge');
+            isYellowBoxFlashing = true;
+            highlightedModuleInDict = moduleIdToHighlight;
+
+            box.classList.add('yellow-box-flashing');
+            badge.textContent = badgeText;
+            badge.classList.remove('hidden');
+            badge.classList.add('inline-flex');
+        }
+
+        function stopYellowBoxFlash() {
+            const box = document.getElementById('yellowDictBox');
+            const badge = document.getElementById('yellowBoxAlertBadge');
+            isYellowBoxFlashing = false;
+            box.classList.remove('yellow-box-flashing');
+            badge.classList.add('hidden');
+            badge.classList.remove('inline-flex');
+        }
+
+        function handleYellowBoxClick() {
+            stopYellowBoxFlash();
+            openDictionaryModal(highlightedModuleInDict);
+            highlightedModuleInDict = null;
+        }
+
+        /* ============================================================================
+           7. GERÇEK PYTHON 3.11 MOTORU (PYODIDE) & SATIR İÇİ TERMİNAL INPUT()
+           ============================================================================ */
+        let pyodide = null;
+        let isPyodideReady = false;
+        let activeInputResolver = null;
+        let activeInputTarget = null;
+
+        async function initPyodide() {
+            const statusEl = document.getElementById('pyodideStatusText');
+            try {
+                pyodide = await loadPyodide();
+                await pyodide.runPythonAsync(`
+import js
+async def _studio_async_input(prompt=""):
+    val = await js.terminalReadLine(str(prompt))
+    return str(val)
+                `);
+                isPyodideReady = true;
+                statusEl.className = "text-emerald-400 font-semibold";
+                statusEl.textContent = "Python 3.11 Hazır ✓";
+            } catch (err) {
+                console.warn("Pyodide çevrimdışı:", err);
+                isPyodideReady = false;
+                statusEl.className = "text-sky-400 font-semibold";
+                statusEl.textContent = "Çevrimdışı Mod";
+            }
+        }
+
+        window.terminalReadLine = function(promptStr) {
+            return new Promise((resolve) => {
+                const target = activeInputTarget || 'lesson';
+                const outEl = document.getElementById(`${target}TerminalOut`);
+                const barEl = document.getElementById(`${target}TerminalInputBar`);
+                const promptLabel = document.getElementById(`${target}InputPromptText`);
+                const fieldEl = document.getElementById(`${target}TerminalInputField`);
+
+                if (promptStr) {
+                    const pLine = document.createElement('div');
+                    pLine.className = "text-amber-300";
+                    pLine.textContent = promptStr;
+                    outEl.appendChild(pLine);
+                    outEl.scrollTop = outEl.scrollHeight;
+                }
+
+                promptLabel.textContent = promptStr || "Veri girin:";
+                fieldEl.value = "";
+                barEl.classList.remove('hidden');
+                barEl.classList.add('flex');
+                setTimeout(() => fieldEl.focus(), 30);
+
+                activeInputResolver = (userVal) => {
+                    barEl.classList.add('hidden');
+                    barEl.classList.remove('flex');
+                    const echo = document.createElement('div');
+                    echo.className = "text-indigo-300";
+                    echo.textContent = `> ${userVal}`;
+                    outEl.appendChild(echo);
+                    outEl.scrollTop = outEl.scrollHeight;
+                    resolve(userVal);
+                };
+            });
+        };
+
+        function submitTerminalInput(target) {
+            const field = document.getElementById(`${target}TerminalInputField`);
+            const val = field.value;
+            if (activeInputResolver) {
+                const fn = activeInputResolver;
+                activeInputResolver = null;
+                fn(val);
+            }
+        }
+
+        ['lessonTerminalInputField', 'capstoneTerminalInputField'].forEach(id => {
+            document.getElementById(id).addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    submitTerminalInput(id.startsWith('lesson') ? 'lesson' : 'capstone');
+                }
+            });
+        });
+
+        async function runCodeInTerminal(target = 'lesson', mockInputs = null) {
+            const code = document.getElementById(`${target}Editor`).value;
+            const outEl = document.getElementById(`${target}TerminalOut`);
+            const timeEl = document.getElementById('lessonExecTime');
+
+            outEl.innerHTML = `<div class="text-slate-500 text-xs">>>> Çalıştırılıyor...</div>`;
+            activeInputTarget = target;
+
+            if (!code.trim()) {
+                outEl.innerHTML = `<div class="text-amber-400">Editör boş! Önce Python kodunu yazmalısın.</div>`;
+                return "";
+            }
+
+            const startTime = performance.now();
+            let collectedStdout = "";
+
+            if (isPyodideReady && pyodide) {
+                try {
+                    outEl.innerHTML = "";
+                    pyodide.setStdout({
+                        batched: (msg) => {
+                            collectedStdout += msg + "\n";
+                            appendTerminalLine(outEl, msg, "text-emerald-300");
+                        }
+                    });
+                    pyodide.setStderr({
+                        batched: (msg) => {
+                            collectedStdout += msg + "\n";
+                            appendTerminalLine(outEl, msg, "text-rose-400");
+                        }
+                    });
+
+                    let preparedCode = code;
+                    if (Array.isArray(mockInputs) && mockInputs.length > 0) {
+                        const escaped = JSON.stringify(mockInputs);
+                        const preamble = `_mock_vals = iter(${escaped})\ndef input(prompt=""):\n    val = next(_mock_vals, "")\n    print(f"{prompt}{val}")\n    return str(val)\n`;
+                        preparedCode = preamble + code;
+                    } else if (/\binput\s*\(/.test(code)) {
+                        preparedCode = transformInputCalls(code);
+                    }
+
+                    await pyodide.runPythonAsync(preparedCode);
+
+                    const elapsed = ((performance.now() - startTime) / 1000).toFixed(2);
+                    if (target === 'lesson' && timeEl) timeEl.textContent = `(${elapsed}s)`;
+
+                    if (!collectedStdout.trim()) {
+                        appendTerminalLine(outEl, "Program hatasız tamamlandı (Ekrana çıktı yazdırılmadı).", "text-slate-500 italic");
+                    }
+                    return collectedStdout;
+                } catch (err) {
+                    const friendly = translatePythonErrorToTurkish(err.message || String(err));
+                    appendTerminalLine(outEl, friendly, "text-rose-400 whitespace-pre-wrap");
+                    return "ERROR: " + friendly;
+                }
+            } else {
+                appendTerminalLine(outEl, "Python motoru henüz yükleniyor, lütfen birkaç saniye bekleyip tekrar deneyin.", "text-amber-400");
+                return "";
+            }
+        }
+
+        function transformInputCalls(code) {
+            const lines = code.split('\n');
+            const asyncFuncs = new Set();
+            let currentFunc = null;
+            for (const line of lines) {
+                const fnMatch = line.match(/^\s*def\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/);
+                if (fnMatch) currentFunc = fnMatch[1];
+                if (currentFunc && /\binput\s*\(/.test(line)) {
+                    asyncFuncs.add(currentFunc);
+                }
+            }
+
+            return lines.map(line => {
+                let updated = line.replace(/\binput\s*\(/g, 'await _studio_async_input(');
+                for (const fn of asyncFuncs) {
+                    const defRegex = new RegExp(`^(\\s*)def\\s+${fn}\\s*\\(`);
+                    if (defRegex.test(updated)) {
+                        updated = updated.replace(defRegex, `$1async def ${fn}(`);
+                    } else {
+                        const callRegex = new RegExp(`\\b${fn}\\s*\\(`, 'g');
+                        updated = updated.replace(callRegex, `await ${fn}(`);
+                    }
+                }
+                return updated;
+            }).join('\n');
+        }
+
+        function appendTerminalLine(container, text, className) {
+            const div = document.createElement('div');
+            div.className = className;
+            div.textContent = text;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function resetTerminal(target) {
+            document.getElementById(`${target}TerminalOut`).innerHTML = `<div class="text-slate-500">Konsol temizlendi.</div>`;
+        }
+
+        function translatePythonErrorToTurkish(errMsg) {
+            let hint = "";
+            if (errMsg.includes("SyntaxError")) {
+                hint = "\n💡 İpucu (Sözdizimi Hatası): Parantezleri, tırnak işaretlerini veya if/for/def sonundaki iki nokta (:) işaretini kontrol et.";
+            } else if (errMsg.includes("IndentationError")) {
+                hint = "\n💡 İpucu (Girinti Hatası): if, elif, else, for, while veya def satırından sonra alt satırı 1 Tab (4 boşluk) içeriden yazmalısın.";
+            } else if (errMsg.includes("NameError")) {
+                hint = "\n💡 İpucu (Tanımsız İsim Hatası): Değişken veya fonksiyon adını yanlış yazmış olabilirsin ya da metni tırnak içine almayı unutmuşsun.";
+            } else if (errMsg.includes("TypeError")) {
+                hint = "\n💡 İpucu (Tip Uyuşmazlığı Hatası): Metin (str) ile sayıyı (int) doğrudan toplamaya/çarpmaya çalışıyor olabilirsin. int() dönüşümünü kontrol et.";
+            } else if (errMsg.includes("ValueError")) {
+                hint = "\n💡 İpucu (Değer Hatası): int() içine sayıya çevrilemeyen harfli bir metin girilmiş olabilir.";
+            } else if (errMsg.includes("ZeroDivisionError")) {
+                hint = "\n💡 İpucu (Sıfıra Bölme Hatası): Matematikte bir sayı 0'a bölünemez.";
+            }
+            const shortTrace = errMsg.split('\n').slice(-4).join('\n');
+            return `❌ Hata Oluştu:\n${shortTrace}${hint}`;
+        }
+
+        /* ============================================================================
+           8. MÜFREDAT ARAYÜZÜ, SORU YÜKLEME VE AŞAMA GEÇİŞİ TETİKLEYİCİLERİ
+           ============================================================================ */
+        function renderModuleSidebar() {
+            const container = document.getElementById('moduleTreeContainer');
+            container.innerHTML = "";
+
+            CURRICULUM.forEach(mod => {
+                const doneCount = mod.questions.filter(q => appState.completedIds.includes(q.id)).length;
+                const allDone = doneCount === mod.questions.length;
+
+                const card = document.createElement('div');
+                card.className = `rounded-2xl border overflow-hidden transition ${allDone ? 'border-emerald-500/40 bg-obsidian-950/90' : 'border-slate-800 bg-obsidian-950/80'}`;
+
+                const header = document.createElement('div');
+                header.className = "px-3 py-2.5 bg-obsidian-900 border-b border-slate-800/80 flex items-center justify-between gap-2";
+                header.innerHTML = `
+                    <span class="text-xs font-bold text-slate-200 leading-snug">${mod.title}</span>
+                    <span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full shrink-0 ${allDone ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-400'}">
+                        ${doneCount}/5
+                    </span>
+                `;
+                card.appendChild(header);
+
+                const list = document.createElement('div');
+                list.className = "p-1.5 space-y-1";
+
+                mod.questions.forEach((q, idxInMod) => {
+                    const globalIdx = ALL_QUESTIONS.findIndex(item => item.id === q.id);
+                    const isActive = globalIdx === appState.currentQuestionIndex;
+                    const isDone = appState.completedIds.includes(q.id);
+
+                    const btn = document.createElement('button');
+                    btn.onclick = () => {
+                        selectQuestion(globalIdx);
+                        if (window.innerWidth < 1024) toggleMobileSidebar();
+                    };
+                    btn.className = `w-full text-left px-2.5 py-2 rounded-xl text-xs flex items-center justify-between gap-2 transition cursor-pointer ${
+                        isActive
+                            ? 'bg-indigo-600 text-white font-bold shadow'
+                            : 'text-slate-400 hover:text-white hover:bg-slate-800/80'
+                    }`;
+                    btn.innerHTML = `
+                        <span class="truncate"><span class="opacity-70 font-mono">${idxInMod + 1}.</span> ${q.title}</span>
+                        ${isDone
+                            ? `<i data-lucide="check-circle-2" class="w-4 h-4 shrink-0 ${isActive ? 'text-emerald-300' : 'text-emerald-400'}"></i>`
+                            : `<i data-lucide="circle" class="w-3.5 h-3.5 shrink-0 opacity-35"></i>`
+                        }
+                    `;
+                    list.appendChild(btn);
+                });
+
+                card.appendChild(list);
+                container.appendChild(card);
+            });
+
+            updateProgressBar();
+            lucide.createIcons();
+        }
+
+        function updateProgressBar() {
+            const total = ALL_QUESTIONS.length;
+            const done = appState.completedIds.length;
+            const pct = Math.round((done / total) * 100);
+            document.getElementById('globalProgressBar').style.width = `${pct}%`;
+            document.getElementById('globalProgressText').textContent = `${done}/${total}`;
+        }
+
+        function selectQuestion(index) {
+            const prevQ = ALL_QUESTIONS[appState.currentQuestionIndex];
+            appState.currentQuestionIndex = Math.max(0, Math.min(ALL_QUESTIONS.length - 1, index));
+            const q = ALL_QUESTIONS[appState.currentQuestionIndex];
+
+            // Eğer bir modülden diğer yeni modüle geçildiyse sol üstteki sarı kutucuğu yanıp söndür!
+            if (prevQ && q && prevQ.moduleId !== q.moduleId && q.moduleId > prevQ.moduleId) {
+                triggerYellowBoxFlash(`Modül ${q.moduleId} Komutları!`, q.moduleId);
+            }
+
+            document.getElementById('stepModuleBadge').textContent = `Modül ${q.moduleId}`;
+            document.getElementById('stepCounterBadge').textContent = `Soru ${appState.currentQuestionIndex + 1} / ${ALL_QUESTIONS.length}`;
+            document.getElementById('stepTitle').textContent = q.title;
+            document.getElementById('stepStageBadge').textContent = q.stageLabel;
+            document.getElementById('stepPrompt').innerHTML = q.prompt;
+            document.getElementById('stepExpectedOutput').textContent = q.expectedOutput;
+            document.getElementById('stepQuickSummary').innerHTML = q.quickSummary;
+            document.getElementById('lessonFileName').textContent = q.fileName;
+
+            // Modül içi 5 aşama ilerleme çubuğu
+            const currentMod = CURRICULUM.find(m => m.id === q.moduleId);
+            const dotsContainer = document.getElementById('moduleStageDots');
+            dotsContainer.innerHTML = currentMod.questions.map((mq, idx) => {
+                const isCur = mq.id === q.id;
+                const isComp = appState.completedIds.includes(mq.id);
+                let cls = "h-1.5 rounded-full transition-all ";
+                if (isCur) cls += "bg-indigo-500 ring-2 ring-indigo-400/40";
+                else if (isComp) cls += "bg-emerald-500";
+                else cls += "bg-slate-800";
+                return `<div class="${cls}" title="Aşama ${idx + 1}: ${mq.title}"></div>`;
+            }).join('');
+
+            const mockInfo = document.getElementById('stepMockInputInfo');
+            if (q.mockInputLabel) {
+                mockInfo.textContent = q.mockInputLabel;
+                mockInfo.classList.remove('hidden');
+            } else {
+                mockInfo.classList.add('hidden');
+            }
+
+            const doneBadge = document.getElementById('stepDoneBadge');
+            if (appState.completedIds.includes(q.id)) {
+                doneBadge.classList.remove('hidden');
+                doneBadge.classList.add('inline-flex');
+            } else {
+                doneBadge.classList.add('hidden');
+                doneBadge.classList.remove('inline-flex');
+            }
+
+            document.getElementById('prevQBtn').disabled = appState.currentQuestionIndex === 0;
+            document.getElementById('nextQBtn').disabled = appState.currentQuestionIndex === ALL_QUESTIONS.length - 1;
+
+            // Editör: Kullanıcının daha önce kaydettiği kod varsa onu yükle, yoksa TERTEMİZ boş editör aç!
+            const editor = document.getElementById('lessonEditor');
+            editor.value = appState.savedCodes[q.id] !== undefined ? appState.savedCodes[q.id] : "";
+            updateLineNumbers('lesson');
+
+            populateModuleNoteTab(q.moduleId);
+            document.getElementById('taskFeedbackBox').classList.add('hidden');
+            closeGuidancePanel();
+            populateGuidanceContent(q);
+            switchCenterSubTab('task');
+
+            triggerAutoSave();
+            renderModuleSidebar();
+        }
+
+        function goStep(delta) {
+            selectQuestion(appState.currentQuestionIndex + delta);
+        }
+
+        function clearLessonEditor() {
+            const q = ALL_QUESTIONS[appState.currentQuestionIndex];
+            document.getElementById('lessonEditor').value = "";
+            appState.savedCodes[q.id] = "";
+            updateLineNumbers('lesson');
+            triggerAutoSave();
+        }
+
+        // Kullanıcının Yazdığı Kodu Kontrol Etme & Modül Tamamlanma Kontrolü
+        async function checkUserSolution() {
+            const q = ALL_QUESTIONS[appState.currentQuestionIndex];
+            const code = document.getElementById('lessonEditor').value;
+
+            if (!code.trim()) {
+                showTaskFeedback("Editör şu an boş! Görevdeki yönergelere göre kodunu sıfırdan yazıp tekrar kontrol et.", "warning");
+                return;
+            }
+
+            const output = await runCodeInTerminal('lesson', q.mockInputs || null);
+
+            if (output.startsWith("ERROR:")) {
+                showTaskFeedback("Kodunda bir çalışma hatası oluştu. Terminali inceleyebilir veya aşağıdaki Rehberlik panelinden benzer soruya bakabilirsin.", "error");
+                openGuidancePanel(true);
+                return;
+            }
+
+            const passed = q.validate(code, output);
+            if (passed) {
+                if (!appState.completedIds.includes(q.id)) {
+                    appState.completedIds.push(q.id);
+                    persistStateNow();
+                }
+                document.getElementById('stepDoneBadge').classList.remove('hidden');
+                document.getElementById('stepDoneBadge').classList.add('inline-flex');
+                renderModuleSidebar();
+
+                // Bu modülün 5 sorusu da tamamlandı mı kontrol et!
+                const currentMod = CURRICULUM.find(m => m.id === q.moduleId);
+                const allFiveDone = currentMod.questions.every(mq => appState.completedIds.includes(mq.id));
+
+                if (allFiveDone && !appState.celebratedModules.includes(q.moduleId)) {
+                    appState.celebratedModules.push(q.moduleId);
+                    persistStateNow();
+                    const nextModId = q.moduleId < 8 ? q.moduleId + 1 : 8;
+                    triggerYellowBoxFlash(`Modül ${q.moduleId} Tamam!`, nextModId);
+                    showTaskFeedback(`Tebrikler! Modül ${q.moduleId}'in 5 sorusunu da tamamladın! Sol üstteki sarı kutucuğa göz atıp yeni aşamaya geçebilirsin.`, "success", true);
+                } else {
+                    showTaskFeedback("Harika! Kodunu sıfırdan yazdın ve bu aşamayı başarıyla geçtin.", "success", true);
+                }
+            } else {
+                showTaskFeedback("Kodun çalıştı ama beklenen çıktı veya kullanılan yapı tam eşleşmedi. Beklenen çıktıyı kontrol et ya da 'Yapamadım / Örnek Test Göster' rehberine göz at!", "error");
+                openGuidancePanel(true);
+            }
+        }
+
+        function showTaskFeedback(msg, type, showNext = false) {
+            const box = document.getElementById('taskFeedbackBox');
+            box.classList.remove('hidden');
+            if (type === 'success') {
+                box.className = "rounded-xl p-3.5 text-xs sm:text-sm font-semibold border bg-emerald-500/15 border-emerald-500/40 text-emerald-300 flex flex-wrap items-center justify-between gap-2";
+            } else if (type === 'warning') {
+                box.className = "rounded-xl p-3.5 text-xs sm:text-sm font-semibold border bg-amber-500/15 border-amber-500/40 text-amber-300";
+            } else {
+                box.className = "rounded-xl p-3.5 text-xs sm:text-sm font-semibold border bg-rose-500/15 border-rose-500/40 text-rose-300";
+            }
+
+            box.innerHTML = `<span>${msg}</span>`;
+            if (showNext && appState.currentQuestionIndex < ALL_QUESTIONS.length - 1) {
+                const btn = document.createElement('button');
+                btn.onclick = () => goStep(1);
+                btn.className = "px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow cursor-pointer";
+                btn.textContent = "Sonraki Soruya Geç →";
+                box.appendChild(btn);
+            }
+        }
+
+        /* ============================================================================
+           9. REHBERLİK PANELİ & KONU NOTLARI SEKME YÖNETİMİ
+           ============================================================================ */
+        function populateGuidanceContent(q) {
+            const g = q.guidance;
+            document.getElementById('gBody-similar').innerHTML = `
+                <div class="p-3.5 rounded-xl bg-obsidian-950 border border-slate-800 space-y-2.5">
+                    <div class="font-bold text-amber-300">${g.similar.question}</div>
+                    <pre class="p-3 rounded-lg bg-[#070a11] text-emerald-300 font-mono text-xs overflow-x-auto border border-slate-800">${escapeHtml(g.similar.code)}</pre>
+                    <p class="text-xs text-slate-300 leading-relaxed"><strong class="text-indigo-400">Nasıl Mantık Yürütmeli?</strong> ${g.similar.reason}</p>
+                </div>
+            `;
+
+            document.getElementById('gBody-logic').innerHTML = `
+                <div class="p-3.5 rounded-xl bg-obsidian-950 border border-slate-800 space-y-2">
+                    ${g.logic.map(step => `
+                        <div class="flex items-start gap-2 text-slate-200">
+                            <span class="w-5 h-5 rounded-full bg-amber-500/20 text-amber-400 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">✓</span>
+                            <span>${step}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            document.getElementById('gBody-solution').innerHTML = `
+                <div class="p-3 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-200 text-xs">
+                    <strong>💡 İpucu:</strong> ${g.hint}
+                </div>
+                <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-400">Örnek Çözüm Kodu (Kendin yazmayı denedikten sonra bak):</span>
+                        <button onclick="copySolutionToEditor()" class="text-xs font-bold text-indigo-400 hover:underline cursor-pointer">Editöre Aktar</button>
+                    </div>
+                    <pre class="p-3 rounded-xl bg-[#070a11] text-emerald-300 font-mono text-xs overflow-x-auto border border-slate-800">${escapeHtml(g.solution)}</pre>
+                </div>
+            `;
+        }
+
+        function openGuidancePanel(scroll = false) {
+            const p = document.getElementById('guidancePanel');
+            p.classList.remove('hidden');
+            p.classList.add('guidance-glow');
+            switchGuideTab('similar');
+            if (scroll) p.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function closeGuidancePanel() {
+            const p = document.getElementById('guidancePanel');
+            p.classList.add('hidden');
+            p.classList.remove('guidance-glow');
+        }
+
+        function switchGuideTab(tab) {
+            ['similar', 'logic', 'solution'].forEach(t => {
+                const btn = document.getElementById(`gTab-${t}`);
+                const body = document.getElementById(`gBody-${t}`);
+                if (t === tab) {
+                    btn.className = "g-tab-btn flex-1 py-1.5 px-2 rounded-lg text-xs font-bold bg-amber-400 text-slate-950 transition cursor-pointer";
+                    body.classList.remove('hidden');
+                } else {
+                    btn.className = "g-tab-btn flex-1 py-1.5 px-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition cursor-pointer";
+                    body.classList.add('hidden');
+                }
+            });
+        }
+
+        function copySolutionToEditor() {
+            const q = ALL_QUESTIONS[appState.currentQuestionIndex];
+            const editor = document.getElementById('lessonEditor');
+            editor.value = q.guidance.solution;
+            appState.savedCodes[q.id] = q.guidance.solution;
+            updateLineNumbers('lesson');
+            triggerAutoSave();
+        }
+
+        function switchCenterSubTab(tab) {
+            const taskBtn = document.getElementById('subTab-task');
+            const noteBtn = document.getElementById('subTab-note');
+            const taskPane = document.getElementById('centerPane-task');
+            const notePane = document.getElementById('centerPane-note');
+
+            if (tab === 'task') {
+                taskBtn.className = "center-sub-btn flex-1 py-2 px-3 rounded-lg text-xs font-bold bg-indigo-600 text-white transition cursor-pointer flex items-center justify-center gap-1.5";
+                noteBtn.className = "center-sub-btn flex-1 py-2 px-3 rounded-lg text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer flex items-center justify-center gap-1.5";
+                taskPane.classList.remove('hidden');
+                notePane.classList.add('hidden');
+            } else {
+                noteBtn.className = "center-sub-btn flex-1 py-2 px-3 rounded-lg text-xs font-bold bg-sky-600 text-white transition cursor-pointer flex items-center justify-center gap-1.5";
+                taskBtn.className = "center-sub-btn flex-1 py-2 px-3 rounded-lg text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer flex items-center justify-center gap-1.5";
+                notePane.classList.remove('hidden');
+                taskPane.classList.add('hidden');
+            }
+        }
+
+        function populateModuleNoteTab(moduleId) {
+            const noteObj = MODULE_NOTES.find(n => n.moduleId === moduleId);
+            if (!noteObj) return;
+            document.getElementById('noteModuleTitle').textContent = noteObj.title;
+            const body = document.getElementById('noteDetailedBody');
+
+            body.innerHTML = `
+                <div class="p-3.5 rounded-xl bg-sky-500/10 border border-sky-500/25 text-sky-200 text-xs sm:text-sm">
+                    ${noteObj.summary}
+                </div>
+                ${noteObj.sections.map((sec, idx) => `
+                    <div class="space-y-2.5 pt-2 border-t border-slate-800">
+                        <h4 class="font-bold text-white text-sm sm:text-base">${sec.heading}</h4>
+                        <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">${sec.body}</p>
+                        <div class="rounded-xl bg-[#070a11] border border-slate-800 overflow-hidden">
+                            <div class="flex items-center justify-between px-3 py-1.5 bg-obsidian-950 border-b border-slate-800">
+                                <span class="text-[11px] font-mono text-slate-400">Örnek Kod</span>
+                                <button onclick="loadNoteExampleToEditor(${moduleId}, ${idx})" class="text-[11px] font-bold text-emerald-400 hover:underline cursor-pointer">
+                                    Editörde Dene →
+                                </button>
+                            </div>
+                            <pre class="p-3 font-mono text-xs text-emerald-300 overflow-x-auto">${escapeHtml(sec.code)}</pre>
+                        </div>
+                        <p class="text-xs text-slate-400 italic">${sec.explanation}</p>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        function loadNoteExampleToEditor(moduleId, secIdx) {
+            const noteObj = MODULE_NOTES.find(n => n.moduleId === moduleId);
+            if (!noteObj) return;
+            const code = noteObj.sections[secIdx].code;
+            switchMainTab('curriculum');
+            switchCenterSubTab('task');
+            const editor = document.getElementById('lessonEditor');
+            editor.value = code;
+            updateLineNumbers('lesson');
+            showToast("Örnek kod editöre aktarıldı, Çalıştır'a basıp deneyebilirsin!");
+        }
+
+        /* ============================================================================
+           10. KAPSAMLI PROJE GÖREVLERİ & TAM NOT KÜTÜPHANESİ
+           ============================================================================ */
+        function renderCapstoneSection() {
+            const grid = document.getElementById('capstoneSelectorGrid');
+            grid.innerHTML = CAPSTONE_PROJECTS.map(p => {
+                const isSelected = p.id === appState.activeCapstoneId;
+                return `
+                    <button onclick="selectCapstoneProject('${p.id}')" class="text-left p-3.5 rounded-2xl border transition cursor-pointer ${
+                        isSelected
+                            ? 'bg-emerald-600/15 border-emerald-500 text-white shadow-lg'
+                            : 'bg-obsidian-900 border-slate-800 text-slate-300 hover:border-slate-700'
+                    }">
+                        <div class="font-bold text-xs sm:text-sm">${p.title}</div>
+                        <div class="text-[11px] text-emerald-400 mt-1 font-medium">${p.badge}</div>
+                    </button>
+                `;
+            }).join('');
+
+            const activeProj = CAPSTONE_PROJECTS.find(p => p.id === appState.activeCapstoneId) || CAPSTONE_PROJECTS[0];
+            document.getElementById('capTitle').textContent = activeProj.title;
+            document.getElementById('capDesc').textContent = activeProj.desc;
+            document.getElementById('capFileName').textContent = activeProj.fileName;
+            document.getElementById('capPlanBox').innerHTML = `<pre class="whitespace-pre-wrap font-sans leading-relaxed text-slate-200">${activeProj.plan}</pre>`;
+
+            document.getElementById('capRequirementsList').innerHTML = activeProj.requirements.map(req => `
+                <li class="flex items-start gap-2.5">
+                    <span class="w-5 h-5 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">✓</span>
+                    <span>${req}</span>
+                </li>
+            `).join('');
+
+            const capEditor = document.getElementById('capstoneEditor');
+            capEditor.value = appState.capstoneCodes[activeProj.id] || "";
+            updateLineNumbers('capstone');
+        }
+
+        function selectCapstoneProject(projId) {
+            appState.activeCapstoneId = projId;
+            triggerAutoSave();
+            renderCapstoneSection();
+        }
+
+        function toggleCapstonePlan() {
+            document.getElementById('capPlanBox').classList.toggle('hidden');
+        }
+
+        function renderFullNotesLibrary() {
+            const query = (document.getElementById('notesSearchInput').value || "").toLowerCase();
+            const container = document.getElementById('fullNotesGrid');
+
+            const filtered = MODULE_NOTES.filter(m =>
+                m.title.toLowerCase().includes(query) ||
+                m.summary.toLowerCase().includes(query) ||
+                m.sections.some(s => s.heading.toLowerCase().includes(query) || s.body.toLowerCase().includes(query) || s.code.toLowerCase().includes(query))
+            );
+
+            container.innerHTML = filtered.map(mod => `
+                <div class="rounded-3xl bg-obsidian-900 border border-slate-800 p-5 sm:p-6 space-y-4">
+                    <div>
+                        <span class="px-2.5 py-1 rounded-lg bg-indigo-500/15 text-indigo-300 text-xs font-bold">Modül ${mod.moduleId}</span>
+                        <h3 class="text-lg sm:text-xl font-extrabold text-white mt-2">${mod.title}</h3>
+                        <p class="text-xs sm:text-sm text-slate-400 mt-1">${mod.summary}</p>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        ${mod.sections.map((sec, idx) => `
+                            <div class="rounded-2xl bg-obsidian-950 border border-slate-800 p-4 flex flex-col justify-between space-y-3">
+                                <div class="space-y-2">
+                                    <h4 class="font-bold text-sky-400 text-sm">${sec.heading}</h4>
+                                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">${sec.body}</p>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-[11px] font-mono text-slate-500">Çalışır Örnek</span>
+                                        <button onclick="loadNoteExampleToEditor(${mod.moduleId}, ${idx})" class="text-xs font-bold text-emerald-400 hover:underline cursor-pointer">Editöre Aktar & Çalıştır →</button>
+                                    </div>
+                                    <pre class="p-3 rounded-xl bg-[#070a11] text-emerald-300 font-mono text-xs overflow-x-auto border border-slate-800">${escapeHtml(sec.code)}</pre>
+                                    <p class="text-xs text-slate-400">${sec.explanation}</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        /* ============================================================================
+           11. ANA SEKME GEÇİŞLERİ, SARI SÖZLÜK VE DOSYA İNDİRME / YEDEKLEME
+           ============================================================================ */
+        function switchMainTab(tabName) {
+            ['curriculum', 'capstone', 'notes'].forEach(t => {
+                const view = document.getElementById(`view-${t}`);
+                const btn = document.getElementById(`mainTab-${t}`);
+                if (t === tabName) {
+                    view.classList.remove('hidden');
+                    if (t !== 'notes') view.classList.add('flex');
+                    btn.className = "main-nav-btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow transition whitespace-nowrap cursor-pointer";
+                } else {
+                    view.classList.add('hidden');
+                    view.classList.remove('flex');
+                    btn.className = "main-nav-btn flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800/80 transition whitespace-nowrap cursor-pointer";
+                }
+            });
+
+            if (tabName === 'capstone') renderCapstoneSection();
+            if (tabName === 'notes') renderFullNotesLibrary();
+            lucide.createIcons();
+        }
+
+        function openDictionaryModal(highlightModId = null) {
+            const m = document.getElementById('dictionaryModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+            const sub = document.getElementById('dictSubtitleText');
+            if (highlightModId) {
+                sub.textContent = `Yeni Aşama Açıldı! Modül ${highlightModId} komutları aşağıda vurgulandı.`;
+            } else {
+                sub.textContent = "Öğrendiğin Tüm Komutların Hızlı Başvuru Kartları";
+            }
+            renderDictionary(highlightModId);
+        }
+
+        function closeDictionaryModal() {
+            const m = document.getElementById('dictionaryModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        function renderDictionary(highlightModId = null) {
+            const q = (document.getElementById('dictSearch').value || "").toLowerCase();
+            const list = DICTIONARY_DATA.filter(d => d.cmd.toLowerCase().includes(q) || d.desc.toLowerCase().includes(q) || d.mod.toLowerCase().includes(q));
+            document.getElementById('dictCardsContainer').innerHTML = list.map(item => {
+                const isNew = highlightModId && item.modId === highlightModId;
+                return `
+                    <div class="rounded-2xl p-4 space-y-2 transition ${isNew ? 'bg-amber-400/20 border-2 border-amber-300 shadow-lg shadow-amber-500/20' : 'bg-amber-400/10 border-2 border-amber-400/40'}">
+                        <div class="flex items-center justify-between gap-2">
+                            <code class="px-2.5 py-0.5 rounded-lg bg-amber-400 text-slate-950 font-extrabold text-xs sm:text-sm">${escapeHtml(item.cmd)}</code>
+                            <div class="flex items-center gap-1.5">
+                                ${isNew ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-400 text-slate-950 uppercase">Yeni!</span>` : ''}
+                                <span class="text-[11px] font-bold text-amber-300">${item.mod}</span>
+                            </div>
+                        </div>
+                        <p class="text-xs sm:text-sm text-slate-200 leading-relaxed">${item.desc}</p>
+                        <pre class="p-2.5 rounded-xl bg-[#070a11] text-amber-300 font-mono text-xs overflow-x-auto border border-slate-800">${escapeHtml(item.ex)}</pre>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openBackupModal() {
+            const m = document.getElementById('backupModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+
+        function closeBackupModal() {
+            const m = document.getElementById('backupModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        function downloadFile(filename, content, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadCurrentStepPy() {
+            const q = ALL_QUESTIONS[appState.currentQuestionIndex];
+            const code = document.getElementById('lessonEditor').value;
+            downloadFile(q.fileName, code, "text/x-python");
+            showToast(`${q.fileName} indirildi!`);
+        }
+
+        function downloadCapstonePy() {
+            const proj = CAPSTONE_PROJECTS.find(p => p.id === appState.activeCapstoneId);
+            const code = document.getElementById('capstoneEditor').value;
+            downloadFile(proj.fileName, code, "text/x-python");
+            showToast(`${proj.fileName} indirildi!`);
+        }
+
+        function exportFullBackupJson() {
+            manualSaveAndToast();
+            downloadFile("python_studyo_40gorev_yedek.json", JSON.stringify(appState, null, 2), "application/json");
+            showToast("Tüm ilerleme ve kod yedeği (.json) indirildi!");
+        }
+
+        function importBackupJson(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (imported && typeof imported === 'object') {
+                        appState = { ...appState, ...imported };
+                        persistStateNow();
+                        selectQuestion(appState.currentQuestionIndex || 0);
+                        renderCapstoneSection();
+                        closeBackupModal();
+                        showToast("Yedek başarıyla geri yüklendi!");
+                    }
+                } catch (err) {
+                    showToast("Geçersiz yedek dosyası!");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function confirmResetAll() {
+            localStorage.removeItem(STORAGE_KEY);
+            appState = {
+                currentQuestionIndex: 0,
+                completedIds: [],
+                celebratedModules: [],
+                savedCodes: {},
+                capstoneCodes: {},
+                activeCapstoneId: "cap_1",
+                editorFontSize: 14
+            };
+            stopYellowBoxFlash();
+            selectQuestion(0);
+            showToast("Tüm ilerleme sıfırlandı.");
+        }
+
+        /* ============================================================================
+           12. EDİTÖR SATIR NUMARALARI, MOBİL SEMBOL ÇUBUĞU VE KISAYOLLAR
+           ============================================================================ */
+        function insertCodeSnippet(target, snippet, cursorBackOffset = 0) {
+            const editor = document.getElementById(`${target}Editor`);
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            editor.value = editor.value.substring(0, start) + snippet + editor.value.substring(end);
+            const newPos = start + snippet.length - cursorBackOffset;
+            editor.focus();
+            editor.selectionStart = editor.selectionEnd = newPos;
+            editor.dispatchEvent(new Event('input'));
+        }
+
+        function bindEditorEvents(target) {
+            const editor = document.getElementById(`${target}Editor`);
+            const lineNums = document.getElementById(`${target}LineNumbers`);
+
+            editor.addEventListener('input', () => {
+                updateLineNumbers(target);
+                if (target === 'lesson') {
+                    const q = ALL_QUESTIONS[appState.currentQuestionIndex];
+                    appState.savedCodes[q.id] = editor.value;
+                } else {
+                    appState.capstoneCodes[appState.activeCapstoneId] = editor.value;
+                }
+                triggerAutoSave();
+            });
+
+            editor.addEventListener('scroll', () => {
+                lineNums.scrollTop = editor.scrollTop;
+            });
+
+            editor.addEventListener('keydown', (e) => {
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    const s = editor.selectionStart;
+                    const end = editor.selectionEnd;
+                    editor.value = editor.value.substring(0, s) + "    " + editor.value.substring(end);
+                    editor.selectionStart = editor.selectionEnd = s + 4;
+                    editor.dispatchEvent(new Event('input'));
+                } else if (e.key === 'Enter') {
+                    const s = editor.selectionStart;
+                    const before = editor.value.substring(0, s);
+                    const curLine = before.split('\n').pop();
+                    const indentMatch = curLine.match(/^\s*/);
+                    let indent = indentMatch ? indentMatch[0] : "";
+                    if (curLine.trim().endsWith(':')) indent += "    ";
+                    if (indent.length > 0) {
+                        e.preventDefault();
+                        const end = editor.selectionEnd;
+                        editor.value = editor.value.substring(0, s) + "\n" + indent + editor.value.substring(end);
+                        editor.selectionStart = editor.selectionEnd = s + 1 + indent.length;
+                        editor.dispatchEvent(new Event('input'));
+                    }
+                } else if (e.key === 'F5' || (e.ctrlKey && e.key === 'Enter')) {
+                    e.preventDefault();
+                    runCodeInTerminal(target);
+                }
+            });
+        }
+
+        function updateLineNumbers(target) {
+            const editor = document.getElementById(`${target}Editor`);
+            const lineNums = document.getElementById(`${target}LineNumbers`);
+            const lines = editor.value.split('\n');
+            const count = lines.length;
+            lineNums.innerHTML = Array.from({ length: count }, (_, i) => i + 1).join('<br>');
+
+            if (target === 'lesson') {
+                document.getElementById('lessonLineCountBadge').textContent = `${count} satır`;
+            } else {
+                const nonEmpty = lines.filter(l => l.trim().length > 0).length;
+                document.getElementById('capLineCounter').textContent = `${nonEmpty} / 45 Satır`;
+            }
+        }
+
+        function changeEditorFontSize(delta) {
+            appState.editorFontSize = Math.max(12, Math.min(20, appState.editorFontSize + delta));
+            ['lessonEditor', 'lessonLineNumbers', 'capstoneEditor', 'capstoneLineNumbers'].forEach(id => {
+                document.getElementById(id).style.fontSize = `${appState.editorFontSize}px`;
+            });
+            triggerAutoSave();
+        }
+
+        function toggleMobileSidebar() {
+            const sb = document.getElementById('curriculumSidebar');
+            const bd = document.getElementById('sidebarBackdrop');
+            sb.classList.toggle('-translate-x-full');
+            bd.classList.toggle('hidden');
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSavedState();
+            bindEditorEvents('lesson');
+            bindEditorEvents('capstone');
+            selectQuestion(appState.currentQuestionIndex || 0);
+            renderCapstoneSection();
+            initPyodide();
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
