@@ -3057,6 +3057,67 @@ async def _studio_async_input(prompt=""):
     }
   });
 </script>
+    <!-- Başlangıç Karşılama Ekranı (Splash Screen) -->
+<style>
+  #welcome-splash {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    transition: transform 0.85s cubic-bezier(0.77, 0, 0.175, 1), opacity 0.85s ease;
+  }
+  #welcome-splash.hide-splash {
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+  #welcome-splash h1 {
+    color: #f8fafc;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 0;
+    opacity: 0;
+    transform: translateY(25px);
+    animation: merhabaGiris 0.7s ease forwards 0.15s;
+  }
+  #welcome-splash p {
+    color: #38bdf8;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 1.1rem;
+    margin-top: 10px;
+    opacity: 0;
+    transform: translateY(15px);
+    animation: merhabaGiris 0.7s ease forwards 0.35s;
+  }
+  @keyframes merhabaGiris {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+
+<div id="welcome-splash">
+  <h1>Merhaba 👋</h1>
+  <p>pythonhazırlık</p>
+</div>
+
+<script>
+  window.addEventListener('load', () => {
+    const splash = document.getElementById('welcome-splash');
+    if (!splash) return;
+    setTimeout(() => {
+      splash.classList.add('hide-splash');
+      setTimeout(() => splash.remove(), 900);
+    }, 1300);
+  });
+</script>
 </body>
 </html>
 
