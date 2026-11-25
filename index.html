@@ -3118,6 +3118,247 @@ async def _studio_async_input(prompt=""):
     }, 1300);
   });
 </script>
+    <!-- Ekstra Özellik: Serbest Python Kod Alanı ve Akıllı Hata Telafi Kutusu -->
+<script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+<style>
+  #serbest-alan-modal {
+    display: none;
+    position: fixed;
+    inset: 24px;
+    background: #0f172a;
+    border: 2px solid #38bdf8;
+    border-radius: 16px;
+    z-index: 99990;
+    flex-direction: column;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75);
+    color: #f8fafc;
+    font-family: system-ui, -apple-system, sans-serif;
+    overflow: hidden;
+  }
+  #serbest-alan-modal.aktif {
+    display: flex;
+  }
+  .serbest-ust-bar {
+    background: #1e293b;
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #334155;
+  }
+  .serbest-icerik {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+  .serbest-sol, .serbest-sag {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+  }
+  .serbest-sol {
+    border-right: 1px solid #334155;
+  }
+  #serbest-kod-editor {
+    flex: 1;
+    background: #020617;
+    color: #38bdf8;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 14px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 15px;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+  }
+  #serbest-cikti-ekrani {
+    flex: 1;
+    background: #020617;
+    color: #e2e8f0;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 14px;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 14px;
+    white-space: pre-wrap;
+    overflow-y: auto;
+  }
+  /* Köşedeki Akıllı Hata Telafi Kutucuğu */
+  #hata-telafi-kutusu {
+    display: none;
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 340px;
+    max-width: 90%;
+    background: #1e1b4b;
+    border: 2px solid #f43f5e;
+    border-radius: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 12px 30px rgba(244, 63, 94, 0.35);
+    z-index: 99995;
+    animation: kutuAcilis 0.3s ease;
+  }
+  @keyframes kutuAcilis {
+    from { transform: translateY(15px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .serbest-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: 0.2s;
+  }
+</style>
+
+<!-- Tam Ekran Bağımsız Serbest Kod Paneli -->
+<div id="serbest-alan-modal">
+  <div class="serbest-ust-bar">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span style="font-size:1.2rem; font-weight:700; color:#38bdf8;">⚡ Serbest Kod Yazma ve Deneme Alanı</span>
+      <span id="pyodide-durum" style="font-size:0.8rem; background:#334155; padding:3px 10px; border-radius:20px; color:#cbd5e1;">Python motoru hazırlanıyor...</span>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button id="serbest-calistir-btn" class="serbest-btn" style="background:#22c55e; color:#052e16;">▶ Kodu Çalıştır</button>
+      <button id="serbest-temizle-btn" class="serbest-btn" style="background:#475569; color:#f8fafc;">Temizle</button>
+      <button id="serbest-kapat-btn" class="serbest-btn" style="background:#ef4444; color:#fff;">✕ Kapat</button>
+    </div>
+  </div>
+
+  <div class="serbest-icerik">
+    <div class="serbest-sol">
+      <label style="margin-bottom:8px; font-size:0.9rem; color:#94a3b8;">Python Kodunu Buraya Yaz (Görevlerden Bağımsız):</label>
+      <textarea id="serbest-kod-editor" spellcheck="false"># Buraya istediğin Python kodunu yazıp test edebilirsin!
+isim = "Python Öğrencisi"
+for i in range(1, 4):
+    print(f"{i}. Merhaba {isim}!")</textarea>
+    </div>
+
+    <div class="serbest-sag">
+      <label style="margin-bottom:8px; font-size:0.9rem; color:#94a3b8;">Çalıştırma Çıktısı (Sonuç):</label>
+      <div id="serbest-cikti-ekrani">Henüz kod çalıştırılmadı. Sağ üstten "▶ Kodu Çalıştır" butonuna bas.</div>
+    </div>
+
+    <!-- Köşedeki Hata Telafi Kutucuğu -->
+    <div id="hata-telafi-kutusu">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <strong style="color:#fda4af; font-size:0.95rem;">🛠️ Hata Telafi Rehberi</strong>
+        <button onclick="document.getElementById('hata-telafi-kutusu').style.display='none'" style="background:none; border:none; color:#fda4af; cursor:pointer; font-weight:bold;">✕</button>
+      </div>
+      <div id="hata-telafi-metni" style="font-size:0.85rem; line-height:1.45; color:#f1f5f9;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.addEventListener('DOMContentLoaded', async () => {
+    // 1. Üstteki 3'lü panel grubunu bul ve yanına "Serbest Kod Alanı" butonunu ekle
+    const adayButonlar = Array.from(document.querySelectorAll('button, a, div[role="button"]'));
+    const hedefSekme = adayButonlar.find(el =>
+      el.textContent && (el.textContent.includes('Görev') || el.textContent.includes('Proje') || el.textContent.includes('Kapsamlı'))
+    );
+
+    const serbestButon = document.createElement('button');
+    serbestButon.innerHTML = '⚡ Serbest Kod Alanı';
+    serbestButon.style.cssText = 'background: linear-gradient(135deg, #0284c7, #2563eb); color: #fff; border: 1px solid #38bdf8; padding: 8px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; margin-left: 8px; box-shadow: 0 4px 12px rgba(2,132,199,0.35);';
+
+    if (hedefSekme && hedefSekme.parentElement) {
+      hedefSekme.parentElement.appendChild(serbestButon);
+    } else {
+      // Üst bar bulunamazsa sağ üst köşeye sabit yerleştir
+      serbestButon.style.position = 'fixed';
+      serbestButon.style.top = '14px';
+      serbestButon.style.right = '16px';
+      serbestButon.style.zIndex = '99980';
+      document.body.appendChild(serbestButon);
+    }
+
+    const modal = document.getElementById('serbest-alan-modal');
+    const editor = document.getElementById('serbest-kod-editor');
+    const cikti = document.getElementById('serbest-cikti-ekrani');
+    const hataKutusu = document.getElementById('hata-telafi-kutusu');
+    const hataMetni = document.getElementById('hata-telafi-metni');
+    const durumRozeti = document.getElementById('pyodide-durum');
+
+    serbestButon.onclick = () => modal.classList.add('aktif');
+    document.getElementById('serbest-kapat-btn').onclick = () => modal.classList.remove('aktif');
+    document.getElementById('serbest-temizle-btn').onclick = () => {
+      cikti.textContent = '';
+      hataKutusu.style.display = 'none';
+    };
+
+    // Tab tuşu ile girinti desteği
+    editor.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = editor.selectionStart;
+        editor.value = editor.value.substring(0, start) + '    ' + editor.value.substring(editor.selectionEnd);
+        editor.selectionStart = editor.selectionEnd = start + 4;
+      }
+    });
+
+    // Python motorunu (Pyodide) arka planda yükle
+    let pyodide = null;
+    try {
+      pyodide = await loadPyodide();
+      durumRozeti.textContent = '● Python Hazır';
+      durumRozeti.style.color = '#4ade80';
+    } catch (e) {
+      durumRozeti.textContent = 'Bağlantı Hatası';
+    }
+
+    // Hata türünü analiz edip Türkçe telafi önerisi üreten fonksiyon
+    function hatayiAcikla(hataStr) {
+      let cozum = 'Kodundaki yazım kurallarını ve parantezleri tekrar kontrol et.';
+      if (hataStr.includes('SyntaxError')) {
+        cozum = '<b>Yazım Hatası (SyntaxError):</b> Satır sonundaki iki noktayı (<code>:</code>), tırnak işaretlerini (<code>" "</code>) veya eksik parantezi unutmuş olabilirsin.';
+      } else if (hataStr.includes('IndentationError')) {
+        cozum = '<b>Girinti Hatası (IndentationError):</b> <code>if</code>, <code>for</code> veya <code>def</code> bloklarından sonraki satırı 4 boşluk (Tab) içeriden başlatmalısın.';
+      } else if (hataStr.includes('NameError')) {
+        cozum = '<b>Tanımsız İsim (NameError):</b> Kullandığın değişkeni veya fonksiyonu daha önce tanımlamamışsın ya da harf hatası yapmışsın.';
+      } else if (hataStr.includes('TypeError')) {
+        cozum = '<b>Tür Uyuşmazlığı (TypeError):</b> Metin (str) ile sayıyı (int) doğrudan toplamaya veya yanlış veri tipini birleştirmeye çalışıyor olabilirsin. <code>str()</code> veya <code>int()</code> kullanmayı dene.';
+      } else if (hataStr.includes('ZeroDivisionError')) {
+        cozum = '<b>Sıfıra Bölme Hatası:</b> Bir sayıyı <code>0</code>\'a bölemezsin; bölen değişkenin değerini kontrol et.';
+      } else if (hataStr.includes('IndexError')) {
+        cozum = '<b>Liste Sınırı Hatası (IndexError):</b> Listede olmayan bir sıra numarasına erişmeye çalışıyorsun (Python\'da saymanın 0\'dan başladığını unutma).';
+      }
+      hataMetni.innerHTML = cozum;
+      hataKutusu.style.display = 'block';
+    }
+
+    // Kodu Çalıştır Butonu
+    document.getElementById('serbest-calistir-btn').onclick = async () => {
+      hataKutusu.style.display = 'none';
+      if (!pyodide) {
+        cikti.textContent = 'Python motoru henüz yükleniyor, lütfen birkaç saniye bekleyip tekrar dene...';
+        return;
+      }
+      cikti.style.color = '#e2e8f0';
+      cikti.textContent = 'Çalıştırılıyor...\n';
+      try {
+        pyodide.runPython(`
+import sys, io
+sys.stdout = io.StringIO()
+sys.stderr = io.StringIO()
+        `);
+        await pyodide.runPythonAsync(editor.value);
+        const stdout = pyodide.runPython('sys.stdout.getvalue()');
+        const stderr = pyodide.runPython('sys.stderr.getvalue()');
+        cikti.textContent = (stdout + stderr) || 'Kod hatasız çalıştı (ekrana yazdırılan bir çıktı yok).';
+      } catch (err) {
+        cikti.style.color = '#fca5a5';
+        cikti.textContent = err.toString();
+        hatayiAcikla(err.toString());
+      }
+    };
+  });
+</script>
 </body>
 </html>
 
